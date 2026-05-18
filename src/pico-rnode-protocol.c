@@ -41,32 +41,73 @@ typedef enum {
     RNODE_OPCODE_READY             = 0x0F,
 } rnode_opcode_t;
 
-int32_t rnode_proto_opcode_length(rnode_opcode_t opcode) {
+static int32_t rnode_proto_opcode_length(rnode_opcode_t opcode) {
 
     switch (opcode) {
         case RNODE_OPCODE_DATA:
             return -1; // variable length
         case RNODE_OPCODE_FREQUENCY:
-            return 4;
         case RNODE_OPCODE_BANDWIDTH:
             return 4;
         case RNODE_OPCODE_TXPOWER:
-            return 1;
         case RNODE_OPCODE_SF:
-            return 1;
         case RNODE_OPCODE_CR:
-            return 1;
         case RNODE_OPCODE_RADIO_STATE:
             return 1;
         case RNODE_OPCODE_DETECT:
-            return 0;
         case RNODE_OPCODE_LEAVE:
-            return 0;
         case RNODE_OPCODE_READY:
             return 0;
         default:
             return -2; // unknown opcode
     }
+}
+
+static const char* rnode_proto_opcode_name(rnode_opcode_t opcode) {
+    switch (opcode) {
+        case RNODE_OPCODE_DATA: return "DATA";
+        case RNODE_OPCODE_FREQUENCY: return "FREQUENCY";
+        case RNODE_OPCODE_BANDWIDTH: return "BANDWIDTH";
+        case RNODE_OPCODE_TXPOWER: return "TXPOWER";
+        case RNODE_OPCODE_SF: return "SF";
+        case RNODE_OPCODE_CR: return "CR";
+        case RNODE_OPCODE_RADIO_STATE: return "RADIO_STATE";
+        case RNODE_OPCODE_DETECT: return "DETECT";
+        case RNODE_OPCODE_LEAVE: return "LEAVE";
+        case RNODE_OPCODE_READY: return "READY";
+        default: return "UNKNOWN";
+    }
+}
+
+static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_length_command(
+    pico_rnode_proto_command_decoder_t *decoder
+) {
+    uint32_t value = 0;
+    for (uint32_t i = 0; i < decoder->opcode_length; i++) {
+        value |= ((uint32_t)decoder->smallbuf[i]) << (8 * i);
+    }
+    switch (decoder->opcode) {
+        case RNODE_OPCODE_FREQUENCY:
+            if (decoder->set_frequency_cb) {
+                decoder->set_frequency_cb(decoder->context, decoder->interface, value);
+            }
+            break;
+        case RNODE_OPCODE_BANDWIDTH:
+            if (decoder->set_bandwidth_cb) {
+                decoder->set_bandwidth_cb(decoder->context, decoder->interface, value);
+            }
+            break;
+        case RNODE_OPCODE_TXPOWER:
+            if (decoder->set_txpower_cb) {
+                decoder->set_txpower_cb(decoder->context, decoder->interface, (int8_t)value);
+            }
+            break;
+        // TODO - handle other fixed-length commands
+        default:
+            // This should never happen since we validate opcode length in the main decoder function
+            return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE;
+    }
+    return PICO_RNODE_PROTO_DECODER_STATUS_OK;
 }
 
 pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
@@ -100,6 +141,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
             decoder->smallbuf[decoder->payload_index++] = byte;
             if (decoder->payload_index >= decoder->opcode_length) {
                 // TODO - invoke command callback with decoded fixed-length payload
+                pico_rnode_proto_command_decoder_fixed_length_command(decoder);
                 decoder->state = PICO_RNODE_PROTO_DECODER_STATE_WAIT_COMMAND;
             }
             break;

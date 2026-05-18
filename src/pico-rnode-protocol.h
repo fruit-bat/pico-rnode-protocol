@@ -9,6 +9,15 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
+/*
+ * Each KISS frame contains exactly one RNode command/event.
+ *
+ * The first byte identifies the command opcode/interface.
+ * Remaining bytes belong entirely to that command payload.
+ *
+ * Multiple RNode commands MUST NOT appear in a single KISS frame.
+ */
+
 /**
  * Decoder status values returned by the transmit parser.
  */
