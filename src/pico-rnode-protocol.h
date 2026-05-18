@@ -65,17 +65,6 @@ typedef void (*pico_rnode_proto_data_decoder_start_cb_t)(
 );
 
 /**
- * Information passed to the end-of-frame callback.
- *
- * - len: length of the decoded frame payload in bytes
- * - status: final decoder status for the frame
- */
-typedef struct {
-    uint32_t len;
-    pico_rnode_proto_data_decoder_status_t status;
-} pico_rnode_proto_frame_info_t;
-
-/**
  * Callback invoked when a transmit/receive frame ends.
  *
  * The decoder calls this after a complete frame has been parsed.
@@ -83,7 +72,7 @@ typedef struct {
 typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
     void * context,
     uint8_t interface,
-    pico_rnode_proto_frame_info_t* status
+    uint32_t len
 );
 
 /**
@@ -219,7 +208,7 @@ typedef struct {
 } pico_rnode_proto_event_decoder_t;
 
 
-
+/*
 typedef enum {
     RNODE_CMD_SET_FREQUENCY,
     RNODE_CMD_SET_BANDWIDTH,
@@ -278,7 +267,7 @@ typedef struct {
         } cr;
     };
 } rnode_event_t;
-
+*/
 
 #ifdef __cplusplus
 }
