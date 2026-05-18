@@ -84,7 +84,8 @@ static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_
 ) {
     uint32_t value = 0;
     for (uint32_t i = 0; i < decoder->opcode_length; i++) {
-        value |= ((uint32_t)decoder->smallbuf[i]) << (8 * i);
+        value <<= 8;
+        value |= ((uint32_t)decoder->smallbuf[i]);
     }
     switch (decoder->opcode) {
         case RNODE_OPCODE_FREQUENCY:
@@ -138,6 +139,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
                     decoder->state = PICO_RNODE_PROTO_DECODER_STATE_READ_FIXED;
                     break;                    
             }
+            break;
         }
         case PICO_RNODE_PROTO_DECODER_STATE_READ_FIXED: {
             if (decoder->payload_index < decoder->opcode_length) {
