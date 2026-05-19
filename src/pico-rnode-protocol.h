@@ -182,6 +182,12 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
     uint8_t byte
 );
 
+pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_write(
+    pico_rnode_proto_command_decoder_t *decoder,
+    const uint8_t* bytes,
+    size_t len
+);
+
 void pico_rnode_proto_command_decoder_start(
     pico_rnode_proto_command_decoder_t *decoder
 );

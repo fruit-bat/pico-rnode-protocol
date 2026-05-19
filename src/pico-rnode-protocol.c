@@ -180,6 +180,23 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
     return PICO_RNODE_PROTO_DECODER_STATUS_OK;
 }
 
+pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_write(
+    pico_rnode_proto_command_decoder_t *decoder,
+    const uint8_t* bytes,
+    size_t len
+) {
+    for (size_t i = 0; i < len; i++) {
+        pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_put(
+            decoder,
+            bytes[i]
+        );
+        if (status != PICO_RNODE_PROTO_DECODER_STATUS_OK) {
+            return status;
+        }
+    }
+    return PICO_RNODE_PROTO_DECODER_STATUS_OK;
+}
+
 void pico_rnode_proto_command_decoder_start(
     pico_rnode_proto_command_decoder_t *decoder
 ) {
