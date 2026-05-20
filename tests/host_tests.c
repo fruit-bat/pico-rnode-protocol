@@ -28,7 +28,7 @@ void pico_rnode_proto_cmd_set_frequency_cb_test(
     uint8_t interface,
     uint32_t frequency_hz
 ) {
-    fprintf(stderr, "set_frequency_cb called with interface=%u, frequency_hz=%lu\n", interface, frequency_hz);
+    fprintf(stderr, "set_frequency_cb called with interface=%u, frequency_hz=%u\n", interface, frequency_hz);
     assert(interface == 1);
     assert(frequency_hz == 867252736);
 }
@@ -48,7 +48,7 @@ void pico_rnode_proto_cmd_set_bandwidth_cb_test(
     uint8_t interface,
     uint32_t bandwidth
 ) {
-    fprintf(stderr, "set_bandwidth_cb called with interface=%u, bandwidth=%lu\n", interface, bandwidth);
+    fprintf(stderr, "set_bandwidth_cb called with interface=%u, bandwidth=%u\n", interface, bandwidth);
     assert(interface == 1);
     assert(bandwidth == 867252736);
 }
