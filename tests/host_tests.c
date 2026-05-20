@@ -270,8 +270,7 @@ static void test_decoder_transmit(void) {
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
-    const uint8_t frame[] = { 
-        0x10, // Interface 1, opcode 0 (transmit)
+    const uint8_t frame_data[] = { 
         'h', // Payload byte 0
         'e', // Payload byte 1
         'l', // Payload byte 2
@@ -279,15 +278,31 @@ static void test_decoder_transmit(void) {
         'o', // Payload byte 4
     };
 
+
     pico_rnode_proto_command_decoder_start(&decoder);
 
-    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+    pico_rnode_proto_decoder_status_t status1 = pico_rnode_proto_command_decoder_put(
         &decoder,
-        frame,
-        sizeof(frame)
+        0x10 // Interface 1, opcode 0 (transmit)
     );
+    assert(status1 == PICO_RNODE_PROTO_DECODER_STATUS_OK);
 
-    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
+
+    pico_rnode_proto_decoder_status_t status2 = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame_data,
+        sizeof(frame_data)
+    );
+    assert(status2 == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 5);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
 
     pico_rnode_proto_command_decoder_end(&decoder);
 
@@ -300,8 +315,6 @@ static void test_decoder_transmit(void) {
     assert(tx_error_cb_count == 0);
     assert_equal_bytes(data, (const uint8_t*)"hello", 5);
 }
-
-
 
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
