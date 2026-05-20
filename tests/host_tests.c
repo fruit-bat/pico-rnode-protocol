@@ -29,6 +29,7 @@ static uint32_t txpower_cb_count = 0;
 static uint32_t tx_start_cb_count = 0;
 static uint32_t tx_data_cb_count = 0;
 static uint32_t tx_end_cb_count = 0;
+static uint32_t tx_error_cb_count = 0;
 static uint8_t data[9] = {0};
 
 void reset_callback_counts(void) {
@@ -38,6 +39,18 @@ void reset_callback_counts(void) {
     tx_start_cb_count = 0;
     tx_data_cb_count = 0;
     tx_end_cb_count = 0;
+    tx_error_cb_count = 0;
+    memset(data, 0, sizeof(data));
+}
+
+void pico_rnode_proto_data_decoder_error_cb_test(
+    void * context,
+    uint8_t interface,
+    pico_rnode_proto_data_decoder_status_t status,
+    uint32_t index
+) {
+    fprintf(stderr, "tx_error_cb called with interface=%u, status=%d, index=%u\n", interface, status, index);
+    tx_error_cb_count++;
 }
 
 void pico_rnode_proto_cmd_set_frequency_cb_test(
@@ -120,7 +133,7 @@ static void test_decoder_set_bandwidth(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        NULL  // tx_error_cb
+        pico_rnode_proto_data_decoder_error_cb_test  // tx_error_cb
     );
 
     // Set bandwidth command on interface 1 with bandwidth 867252736 Hz
@@ -148,6 +161,10 @@ static void test_decoder_set_bandwidth(void) {
     assert(bandwidth_cb_count == 1);
     assert(frequency_cb_count == 0);
     assert(txpower_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
 }
 
 static void test_decoder_set_frequency(void) {
@@ -161,7 +178,7 @@ static void test_decoder_set_frequency(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        NULL  // tx_error_cb
+        pico_rnode_proto_data_decoder_error_cb_test  // tx_error_cb
     );
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
@@ -189,6 +206,10 @@ static void test_decoder_set_frequency(void) {
     assert(bandwidth_cb_count == 0);
     assert(frequency_cb_count == 1);
     assert(txpower_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
 }
 
 static void test_decoder_set_txpower(void) {
@@ -202,7 +223,7 @@ static void test_decoder_set_txpower(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        NULL  // tx_error_cb
+        pico_rnode_proto_data_decoder_error_cb_test // tx_error_cb
     );
 
     // Set txpower command on interface 1 with txpower 14 dBm
@@ -227,7 +248,60 @@ static void test_decoder_set_txpower(void) {
     assert(bandwidth_cb_count == 0);
     assert(frequency_cb_count == 0);
     assert(txpower_cb_count == 1);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
 }
+
+static void test_decoder_transmit(void) {
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    pico_rnode_proto_command_decoder_init(
+        &decoder,
+        NULL, // context
+        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
+        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
+        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
+        pico_rnode_proto_data_decoder_error_cb_test // tx_error_cb
+    );
+
+    // Set frequency command on interface 1 with frequency 867252736 Hz
+    // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
+    const uint8_t frame[] = { 
+        0x10, // Interface 1, opcode 0 (transmit)
+        'h', // Payload byte 0
+        'e', // Payload byte 1
+        'l', // Payload byte 2
+        'l', // Payload byte 3
+        'o', // Payload byte 4
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(bandwidth_cb_count == 0);
+    assert(frequency_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 5);
+    assert(tx_end_cb_count == 1);
+    assert(tx_error_cb_count == 0);
+    assert_equal_bytes(data, (const uint8_t*)"hello", 5);
+}
+
+
 
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
@@ -240,6 +314,7 @@ int main(void) {
     run_test("decoder_set_bandwidth", test_decoder_set_bandwidth);
     run_test("decoder_set_frequency", test_decoder_set_frequency);
     run_test("decoder_set_txpower", test_decoder_set_txpower);
+    run_test("decoder_transmit", test_decoder_transmit);
 
     printf("All tests passed.\n");
     return 0;

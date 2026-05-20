@@ -175,6 +175,8 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
                     return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
                 }
             }
+            decoder->payload_index++;
+            break;
         }
     }
     return PICO_RNODE_PROTO_DECODER_STATUS_OK;
