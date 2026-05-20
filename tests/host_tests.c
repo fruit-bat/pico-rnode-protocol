@@ -26,11 +26,18 @@ static void assert_equal_bytes(const uint8_t *actual, const uint8_t *expected, s
 static uint32_t frequency_cb_count = 0;
 static uint32_t bandwidth_cb_count = 0;
 static uint32_t txpower_cb_count = 0;
+static uint32_t tx_start_cb_count = 0;
+static uint32_t tx_data_cb_count = 0;
+static uint32_t tx_end_cb_count = 0;
+static uint8_t data[9] = {0};
 
 void reset_callback_counts(void) {
     frequency_cb_count = 0;
     bandwidth_cb_count = 0;
     txpower_cb_count = 0;
+    tx_start_cb_count = 0;
+    tx_data_cb_count = 0;
+    tx_end_cb_count = 0;
 }
 
 void pico_rnode_proto_cmd_set_frequency_cb_test(
@@ -55,6 +62,42 @@ void pico_rnode_proto_cmd_set_txpower_cb_test(
     txpower_cb_count++;
 }
 
+void pico_rnode_proto_cmd_tx_start_cb_test(
+    void * context,
+    uint8_t interface
+) {
+    fprintf(stderr, "tx_start_cb called with interface=%u\n", interface);
+    assert(interface == 1);
+    tx_start_cb_count++;
+}
+
+pico_rnode_proto_data_decoder_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
+    void * context,
+    uint8_t interface,
+    uint8_t byte,
+    uint32_t byte_index
+) {
+    fprintf(stderr, "tx_data_cb called with interface=%u, byte=%u, byte_index=%u\n", interface, byte, byte_index);
+    assert(interface == 1);
+    if (byte_index >= sizeof(data)) {
+        fprintf(stderr, "Error: byte_index %u out of bounds\n", byte_index);
+        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ERROR;
+    }
+    data[byte_index] = byte;
+    tx_data_cb_count++;
+    return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
+}
+
+void pico_rnode_proto_cmd_tx_end_cb_test(
+    void * context,
+    uint8_t interface,
+    uint32_t len
+) {
+    fprintf(stderr, "tx_end_cb called with interface=%u, len=%u\n", interface, len);
+    assert(interface == 1);
+    tx_end_cb_count++;
+}
+
 void pico_rnode_proto_cmd_set_bandwidth_cb_test(
     void * context,
     uint8_t interface,
@@ -74,9 +117,9 @@ static void test_decoder_set_bandwidth(void) {
         pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
         pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
         pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        NULL, // tx_start_cb
-        NULL, // tx_data_cb
-        NULL, // tx_end_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
         NULL  // tx_error_cb
     );
 
@@ -115,9 +158,9 @@ static void test_decoder_set_frequency(void) {
         pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
         pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
         pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        NULL, // tx_start_cb
-        NULL, // tx_data_cb
-        NULL, // tx_end_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
         NULL  // tx_error_cb
     );
 
@@ -156,9 +199,9 @@ static void test_decoder_set_txpower(void) {
         pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
         pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
         pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        NULL, // tx_start_cb
-        NULL, // tx_data_cb
-        NULL, // tx_end_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
         NULL  // tx_error_cb
     );
 
