@@ -21,10 +21,11 @@ extern "C" {
 /**
  * Decoder status values returned by the transmit parser.
  */
+// TODO not used at present, but may be useful for future error handling and flow control features
 typedef enum {
     PICO_RNODE_PROTO_FRAME_STATUS_OK = 0,
     PICO_RNODE_PROTO_FRAME_STATUS_ABORTED,
-} pico_rnode_proto_data_decoder_status_t;
+} pico_rnode_proto_stream_status_t;
 
 typedef enum {
     PICO_RNODE_PROTO_FRAME_CB_STATUS_OK = 0,
@@ -77,7 +78,7 @@ typedef void (*pico_rnode_proto_data_decoder_start_cb_t)(
 typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
     void * context,
     uint8_t interface,
-    uint32_t len
+    uint32_t length
 );
 
 /**
@@ -86,8 +87,9 @@ typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
  * Parameters:
  * - context: user-provided context pointer
  * - interface: the interface on which the error occurred
+ * - opcode: the opcode of the command being parsed when the error occurred
+ * - index: the index of the byte that triggered the error within the current command payload
  * - status: decoder error code
- * - index: index of the byte that triggered the error within the current transmit/receive frame
  */
 typedef void (*pico_rnode_proto_decoder_error_cb_t)(
     void * context,
