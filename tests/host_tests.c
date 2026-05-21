@@ -305,7 +305,8 @@ static void test_decoder_transmit(void) {
     assert(tx_end_cb_count == 0);
     assert(tx_error_cb_count == 0);
 
-    pico_rnode_proto_command_decoder_end(&decoder);
+    pico_rnode_proto_decoder_status_t status3 = pico_rnode_proto_command_decoder_end(&decoder);
+    assert(status3 == PICO_RNODE_PROTO_DECODER_STATUS_OK);
 
     assert(bandwidth_cb_count == 0);
     assert(frequency_cb_count == 0);

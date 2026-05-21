@@ -257,6 +257,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
                     decoder->payload_index
                 );
             }
+            break;
         }
         default: {
             status = PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
