@@ -43,13 +43,14 @@ void reset_callback_counts(void) {
     memset(data, 0, sizeof(data));
 }
 
-void pico_rnode_proto_data_decoder_error_cb_test(
+void pico_rnode_proto_decoder_error_cb_test(
     void * context,
     uint8_t interface,
-    pico_rnode_proto_data_decoder_status_t status,
-    uint32_t index
+    uint8_t opcode,
+    uint32_t index,
+    pico_rnode_proto_decoder_status_t status
 ) {
-    fprintf(stderr, "tx_error_cb called with interface=%u, status=%d, index=%u\n", interface, status, index);
+    fprintf(stderr, "error_cb called with interface=%u, opcode=%u, index=%u, status=%d\n", interface, opcode, index, status);
     tx_error_cb_count++;
 }
 
@@ -133,7 +134,7 @@ static void test_decoder_set_bandwidth(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_data_decoder_error_cb_test  // tx_error_cb
+        pico_rnode_proto_decoder_error_cb_test  // error_cb
     );
 
     // Set bandwidth command on interface 1 with bandwidth 867252736 Hz
@@ -178,7 +179,7 @@ static void test_decoder_set_frequency(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_data_decoder_error_cb_test  // tx_error_cb
+        pico_rnode_proto_decoder_error_cb_test  // error_cb
     );
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
@@ -223,7 +224,7 @@ static void test_decoder_set_txpower(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_data_decoder_error_cb_test // tx_error_cb
+        pico_rnode_proto_decoder_error_cb_test // error_cb
     );
 
     // Set txpower command on interface 1 with txpower 14 dBm
@@ -265,7 +266,7 @@ static void test_decoder_transmit(void) {
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_data_decoder_error_cb_test // tx_error_cb
+        pico_rnode_proto_decoder_error_cb_test // error_cb
     );
 
     // Set frequency command on interface 1 with frequency 867252736 Hz

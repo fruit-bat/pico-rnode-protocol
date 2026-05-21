@@ -11,7 +11,7 @@ void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_data_decoder_start_cb_t tx_start_cb,
     pico_rnode_proto_data_decoder_data_cb_t tx_data_cb,
     pico_rnode_proto_data_decoder_end_cb_t tx_end_cb,
-    pico_rnode_proto_data_decoder_error_cb_t tx_error_cb
+    pico_rnode_proto_decoder_error_cb_t error_cb
 ) {
     decoder->context = context;
     decoder->payload_index = 0;
@@ -25,7 +25,7 @@ void pico_rnode_proto_command_decoder_init(
     decoder->tx_start_cb = tx_start_cb;
     decoder->tx_data_cb = tx_data_cb;
     decoder->tx_end_cb = tx_end_cb;
-    decoder->tx_error_cb = tx_error_cb;
+    decoder->error_cb = error_cb;
 }
 
 typedef enum {
@@ -126,7 +126,16 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
                 case -2:
                     // Unknown opcode, abort decoding and report error 
                     decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
-                    // TODO - include the invalid opcode in the error callback
+                    // Include the invalid opcode in the error callback
+                    if (decoder->error_cb) {
+                        decoder->error_cb(
+                            decoder->context, 
+                            decoder->interface,
+                            decoder->opcode,
+                            decoder->payload_index,
+                            PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE
+                        );
+                    }
                     return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE;
                 case -1:
                     decoder->state = PICO_RNODE_PROTO_DECODER_STATE_STREAM_DATA;
@@ -148,7 +157,15 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
             else {
                 // Received more bytes than expected for fixed-length command, abort and report error
                 decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
-                // TODO - include the opcode and expected length in the error callback
+                if (decoder->error_cb) {
+                    decoder->error_cb(
+                        decoder->context, 
+                        decoder->interface,
+                        decoder->opcode,
+                        decoder->payload_index,
+                        PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH
+                    );
+                }
                 return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH;
             }
             ++decoder->payload_index;
@@ -164,13 +181,14 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
                 );
                 if (cb_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
                     decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
-                    if (decoder->tx_error_cb) {
-                        decoder->tx_error_cb(
+                    if (decoder->error_cb) {
+                        decoder->error_cb(
                             decoder->context, 
                             decoder->interface,
-                            PICO_RNODE_PROTO_DECODER_STATUS_ABORTED,
-                            decoder->payload_index
-                        ); 
+                            decoder->opcode,
+                            decoder->payload_index,
+                            PICO_RNODE_PROTO_DECODER_STATUS_ABORTED
+                        );
                     }
                     return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
                 }
@@ -206,14 +224,28 @@ void pico_rnode_proto_command_decoder_start(
     decoder->payload_index = 0;
 }
 
-void pico_rnode_proto_command_decoder_end(
+pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
     pico_rnode_proto_command_decoder_t *decoder
 ) {
+    pico_rnode_proto_decoder_status_t status = PICO_RNODE_PROTO_DECODER_STATUS_OK;
     switch (decoder->state) {
         case PICO_RNODE_PROTO_DECODER_STATE_READ_FIXED: {
             if (decoder->payload_index == decoder->opcode_length) {
                 // Invoke command callback with decoded fixed-length payload
                 pico_rnode_proto_command_decoder_fixed_length_command(decoder);
+            }
+            else {
+                // Received fewer bytes than expected for fixed-length command, abort and report error
+                status = PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH;
+                if (decoder->error_cb) {
+                    decoder->error_cb(
+                        decoder->context, 
+                        decoder->interface,
+                        decoder->opcode,
+                        decoder->payload_index,
+                        PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH
+                    ); 
+                }
             }
             break;
         }
@@ -227,10 +259,11 @@ void pico_rnode_proto_command_decoder_end(
             }
         }
         default: {
-            // Decoding was aborted due to an error, nothing to do
-            // TODO - consider invoking an error callback here to report that the frame ended unexpectedly after an error
+            status = PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
             break;
         }
     }
     pico_rnode_proto_command_decoder_start(decoder);
+
+    return status;
 }

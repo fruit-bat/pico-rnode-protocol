@@ -26,12 +26,17 @@ typedef enum {
     PICO_RNODE_PROTO_FRAME_STATUS_ABORTED,
 } pico_rnode_proto_data_decoder_status_t;
 
-
-
 typedef enum {
     PICO_RNODE_PROTO_FRAME_CB_STATUS_OK = 0,
     PICO_RNODE_PROTO_FRAME_CB_STATUS_ERROR = 1,
 } pico_rnode_proto_data_decoder_cb_status_t;
+
+typedef enum {
+    PICO_RNODE_PROTO_DECODER_STATUS_OK = 0,
+    PICO_RNODE_PROTO_DECODER_STATUS_ABORTED,
+    PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH,
+    PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE,
+} pico_rnode_proto_decoder_status_t;
 
 /**
  * Callback invoked for each transmit/receive byte.
@@ -76,7 +81,7 @@ typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
 );
 
 /**
- * Callback invoked when a byte-level transmit/receive error occurs.
+ * Callback invoked when an error occurs.
  *
  * Parameters:
  * - context: user-provided context pointer
@@ -84,11 +89,12 @@ typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
  * - status: decoder error code
  * - index: index of the byte that triggered the error within the current transmit/receive frame
  */
-typedef void (*pico_rnode_proto_data_decoder_error_cb_t)(
+typedef void (*pico_rnode_proto_decoder_error_cb_t)(
     void * context,
     uint8_t interface,
-    pico_rnode_proto_data_decoder_status_t status,
-    uint32_t index
+    uint8_t opcode,
+    uint32_t index,
+    pico_rnode_proto_decoder_status_t status
 );
 
 typedef struct {
@@ -150,11 +156,13 @@ typedef struct {
     pico_rnode_proto_cmd_set_bandwidth_cb_t set_bandwidth_cb;
     pico_rnode_proto_cmd_set_txpower_cb_t set_txpower_cb;
     
-    // transmit command callbacks
+    // Transmit command callbacks
     pico_rnode_proto_data_decoder_start_cb_t tx_start_cb;
     pico_rnode_proto_data_decoder_data_cb_t tx_data_cb;
     pico_rnode_proto_data_decoder_end_cb_t tx_end_cb;
-    pico_rnode_proto_data_decoder_error_cb_t tx_error_cb;
+
+    // Error callback
+    pico_rnode_proto_decoder_error_cb_t error_cb;
 
 } pico_rnode_proto_command_decoder_t;
 
@@ -167,15 +175,8 @@ void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_data_decoder_start_cb_t tx_start_cb,
     pico_rnode_proto_data_decoder_data_cb_t tx_data_cb,
     pico_rnode_proto_data_decoder_end_cb_t tx_end_cb,
-    pico_rnode_proto_data_decoder_error_cb_t tx_error_cb
+    pico_rnode_proto_decoder_error_cb_t error_cb
 );
-
-typedef enum {
-    PICO_RNODE_PROTO_DECODER_STATUS_OK = 0,
-    PICO_RNODE_PROTO_DECODER_STATUS_ABORTED,
-    PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH,
-    PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE,
-} pico_rnode_proto_decoder_status_t;
 
 pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
     pico_rnode_proto_command_decoder_t *decoder,
@@ -192,88 +193,26 @@ void pico_rnode_proto_command_decoder_start(
     pico_rnode_proto_command_decoder_t *decoder
 );
 
-void pico_rnode_proto_command_decoder_end(
+pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
     pico_rnode_proto_command_decoder_t *decoder
 );
 
-typedef struct {
-    // TODO
+// typedef struct {
+//     // TODO
 
-} pico_rnode_proto_event_encoder_t;
+// } pico_rnode_proto_event_encoder_t;
 
-typedef struct {
-    void * context;
+// typedef struct {
+//     void * context;
 
-    // TODO ...
+//     // TODO ...
 
-    pico_rnode_proto_data_decoder_start_cb_t rx_start_cb;
-    pico_rnode_proto_data_decoder_data_cb_t rx_data_cb;
-    pico_rnode_proto_data_decoder_end_cb_t rx_end_cb;
-    pico_rnode_proto_data_decoder_error_cb_t rx_error_cb;
+//     pico_rnode_proto_data_decoder_start_cb_t rx_start_cb;
+//     pico_rnode_proto_data_decoder_data_cb_t rx_data_cb;
+//     pico_rnode_proto_data_decoder_end_cb_t rx_end_cb;
+//     pico_rnode_proto_decoder_error_cb_t error_cb;
 
-} pico_rnode_proto_event_decoder_t;
-
-
-/*
-typedef enum {
-    RNODE_CMD_SET_FREQUENCY,
-    RNODE_CMD_SET_BANDWIDTH,
-    RNODE_CMD_SET_TXPOWER,
-    RNODE_CMD_TRANSMIT,
-} pico_rnode_proto_command_type_t;
-
-typedef enum {
-    RNODE_EVENT_PACKET_RECEIVED,
-    RNODE_EVENT_READY,
-    RNODE_EVENT_RSSI,
-    RNODE_EVENT_SNR,
-} pico_rnode_proto_event_type_t;
-
-
-
-typedef enum {
-    RNODE_EVENT_DATA,
-    RNODE_EVENT_SET_FREQUENCY,
-    RNODE_EVENT_SET_BANDWIDTH,
-    RNODE_EVENT_SET_TXPOWER,
-    RNODE_EVENT_SET_SF,
-    RNODE_EVENT_SET_CR,
-    RNODE_EVENT_READY,
-    RNODE_EVENT_UNKNOWN
-} rnode_event_type_t;
-
-typedef struct {
-    rnode_event_type_t type;
-    uint8_t interface;
-
-    union {
-        struct {
-            const uint8_t *data;
-            size_t len;
-        } data;
-
-        struct {
-            uint32_t hz;
-        } frequency;
-
-        struct {
-            uint32_t bandwidth;
-        } bandwidth;
-
-        struct {
-            int8_t dbm;
-        } txpower;
-
-        struct {
-            uint8_t sf;
-        } sf;
-
-        struct {
-            uint8_t cr;
-        } cr;
-    };
-} rnode_event_t;
-*/
+// } pico_rnode_proto_event_decoder_t;
 
 #ifdef __cplusplus
 }
