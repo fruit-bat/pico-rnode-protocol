@@ -38,17 +38,17 @@ void pico_rnode_proto_command_decoder_init(
 // RNODE commands
 // | Opcode | Name        | Payload  |
 // | ------ | ----------- | -------- |
-// | `0x00` | DATA        | variable |
-// | `0x01` | FREQUENCY   | `u32`    |
-// | `0x02` | BANDWIDTH   | `u32`    |
-// | `0x03` | TXPOWER     | `u8`     |
-// | `0x04` | SF          | `u8`     |
-// | `0x05` | CR          | `u8`     |
-// | `0x06` | RADIO_STATE | `u8`     |
-// | `0x07` | RADIO_LOCK  | `u8`     |
-// | `0x08` | DETECT      | `u8`     |
-// | `0x0A` | LEAVE       | `u8`     |
-// | `0x0F` | READY       | empty    |
+// | `0x00` | DATA        | variable | (up to 255 bytes, sent in a stream of multiple frames if needed)
+// | `0x01` | FREQUENCY   | `u32`    | (in Hz, e.g. 868100000 for 868.1 MHz center frequency)
+// | `0x02` | BANDWIDTH   | `u32`    | (in Hz, e.g. 125000 for 125 kHz LoRa bandwidth)
+// | `0x03` | TXPOWER     | `u8`     | (signed dBm value)
+// | `0x04` | SF          | `u8`     | (spreading factor, for LoRa radios)
+// | `0x05` | CR          | `u8`     | (coding rate, for LoRa radios)
+// | `0x06` | RADIO_STATE | `u8`     | (0 = off, 1 = on, 255 = query state)
+// | `0x07` | RADIO_LOCK  | `u8`     | (0 = unlock, 1 = lock the radio for exclusive use by the current interface)
+// | `0x08` | DETECT      | `u8`     | (interface to detect on)
+// | `0x0A` | LEAVE       | `u8`     | (interface to leave)
+// | `0x0F` | READY       | empty    | (sent by device when ready to receive commands after power-on or reset)
 //
 //
 // Status / telemetry events
@@ -58,7 +58,7 @@ void pico_rnode_proto_command_decoder_init(
 // | ------ | --------- | ------------------- |
 // | `0x21` | STAT_RX   | varies              |
 // | `0x22` | STAT_TX   | varies              |
-// | `0x23` | STAT_RSSI | `i8`                |
+// | `0x23` | STAT_RSSI | `i8`                | 
 // | `0x24` | STAT_SNR  | `i8` scaled by 0.25 |
 //
 //
