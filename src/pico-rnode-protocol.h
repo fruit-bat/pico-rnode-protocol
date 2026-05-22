@@ -29,7 +29,7 @@ typedef enum {
 
 typedef enum {
     PICO_RNODE_PROTO_FRAME_CB_STATUS_OK = 0,
-    PICO_RNODE_PROTO_FRAME_CB_STATUS_ERROR = 1,
+    PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT = 1,
 } pico_rnode_proto_data_decoder_cb_status_t;
 
 typedef enum {

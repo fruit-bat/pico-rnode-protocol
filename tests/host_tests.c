@@ -31,6 +31,11 @@ static uint32_t tx_data_cb_count = 0;
 static uint32_t tx_end_cb_count = 0;
 static uint32_t tx_error_cb_count = 0;
 static uint8_t data[9] = {0};
+static void* error_context = NULL;
+static uint8_t error_interface = 0;
+static uint8_t error_opcode = 0;
+static uint32_t error_index = 0;
+static pico_rnode_proto_decoder_status_t error_status = 0;
 
 void reset_callback_counts(void) {
     frequency_cb_count = 0;
@@ -50,6 +55,11 @@ void pico_rnode_proto_decoder_error_cb_test(
     uint32_t index,
     pico_rnode_proto_decoder_status_t status
 ) {
+    error_context = context;
+    error_interface = interface;
+    error_opcode = opcode;
+    error_index = index;
+    error_status = status;
     fprintf(stderr, "error_cb called with interface=%u, opcode=%u, index=%u, status=%d\n", interface, opcode, index, status);
     tx_error_cb_count++;
 }
@@ -93,9 +103,13 @@ pico_rnode_proto_data_decoder_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
 ) {
     fprintf(stderr, "tx_data_cb called with interface=%u, byte=%u, byte_index=%u\n", interface, byte, byte_index);
     assert(interface == 1);
+    if (byte == '#') {
+        fprintf(stderr, "Simulating error condition on byte '#'\n");
+        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+    }
     if (byte_index >= sizeof(data)) {
         fprintf(stderr, "Error: byte_index %u out of bounds\n", byte_index);
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ERROR;
+        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
     }
     data[byte_index] = byte;
     tx_data_cb_count++;
@@ -318,6 +332,77 @@ static void test_decoder_transmit(void) {
     assert_equal_bytes(data, (const uint8_t*)"hello", 5);
 }
 
+static void test_decoder_transmit_abort(void) {
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    static uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_init(
+        &decoder,
+        &test_context, // context
+        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
+        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
+        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
+        pico_rnode_proto_decoder_error_cb_test // error_cb
+    );
+
+    // Set frequency command on interface 1 with frequency 867252736 Hz
+    // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
+    const uint8_t data_head[] = {
+        0x10, // Interface 1, opcode 0 (transmit) 
+        'h', // Payload byte 0
+        'e', // Payload byte 1
+    };
+    const uint8_t data_tail[] = {
+        '#', // Payload byte 2
+        'l', // Payload byte 3
+        'o', // Payload byte 4
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status1 = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        data_head,
+        sizeof(data_head)
+    );
+    assert(status1 == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 2);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0);
+
+    pico_rnode_proto_decoder_status_t status2 = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        data_tail,
+        sizeof(data_tail)
+    );
+    assert(status2 == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
+
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 2); // Data callback should not be called for bytes after the error
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 1);
+
+    pico_rnode_proto_decoder_status_t status3 = pico_rnode_proto_command_decoder_end(&decoder);
+    assert(status3 == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
+
+    assert(bandwidth_cb_count == 0);
+    assert(frequency_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(tx_start_cb_count == 1);
+    assert(tx_data_cb_count == 2); // Data callback should not be called for bytes after the error  
+    assert(tx_end_cb_count == 0); // End callback should not be called since transmission was aborted
+    assert(tx_error_cb_count == 1);
+    assert(error_context == &test_context);
+    assert(error_interface == 1);
+    assert(error_opcode == 0);
+    assert(error_index == 2); // Error should occur on the byte with value '#'
+    assert(error_status == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
+}
+
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
     reset_callback_counts();
@@ -330,7 +415,7 @@ int main(void) {
     run_test("decoder_set_frequency", test_decoder_set_frequency);
     run_test("decoder_set_txpower", test_decoder_set_txpower);
     run_test("decoder_transmit", test_decoder_transmit);
-
+    run_test("decoder_transmit_abort", test_decoder_transmit_abort);
     printf("All tests passed.\n");
     return 0;
 }
