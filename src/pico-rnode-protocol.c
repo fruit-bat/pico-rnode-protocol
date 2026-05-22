@@ -31,7 +31,10 @@ void pico_rnode_proto_command_decoder_init(
     decoder->tx_end_cb = tx_end_cb;
     decoder->error_cb = error_cb;
 }
-
+//
+// Core radio configuration commands
+// These are the fundamental operational commands.
+//
 // RNODE commands
 // | Opcode | Name        | Payload  |
 // | ------ | ----------- | -------- |
@@ -46,6 +49,70 @@ void pico_rnode_proto_command_decoder_init(
 // | `0x08` | DETECT      | `u8`     |
 // | `0x0A` | LEAVE       | `u8`     |
 // | `0x0F` | READY       | empty    |
+//
+//
+// Status / telemetry events
+// These are mostly device → host.
+//
+// | Opcode | Name      | Payload             |
+// | ------ | --------- | ------------------- |
+// | `0x21` | STAT_RX   | varies              |
+// | `0x22` | STAT_TX   | varies              |
+// | `0x23` | STAT_RSSI | `i8`                |
+// | `0x24` | STAT_SNR  | `i8` scaled by 0.25 |
+//
+//
+// Device info / management
+//
+// | Opcode | Name       | Payload    |
+// | ------ | ---------- | ---------- |
+// | `0x30` | BLINK      | none/small |
+// | `0x40` | RANDOM     | `u8`       |
+// | `0x48` | PLATFORM   | `u8`       |
+// | `0x49` | MCU        | `u8`       |
+// | `0x50` | FW_VERSION | 2 bytes    |
+// | `0x51` | ROM_READ   | varies     |
+// | `0x55` | RESET      | optional   |
+// | `0x71` | INTERFACES | varies     |
+//
+//
+// protocol constants
+// Detect handshake
+//
+// | Constant    | Value  |
+// | ----------- | ------ |
+// | DETECT_REQ  | `0x73` |
+// | DETECT_RESP | `0x46` |
+//
+//
+// Radio state constants
+//
+// | Constant        | Value  |
+// | --------------- | ------ |
+// | RADIO_STATE_OFF | `0x00` |
+// | RADIO_STATE_ON  | `0x01` |
+// | RADIO_STATE_ASK | `0xFF` |
+//
+//
+// Error protocol
+//
+// There is also a distinct ERROR opcode:
+//
+// | Opcode | Name  |
+// | ------ | ----- |
+// | `0x90` | ERROR |
+//
+// with payload values like:
+//
+// | Error         | Value  |
+// | ------------- | ------ |
+// | INITRADIO     | `0x01` |
+// | TXFAILED      | `0x02` |
+// | EEPROM_LOCKED | `0x03` |
+//
+//
+
+
 
 typedef enum {
     RNODE_OPCODE_DATA              = 0x00,
