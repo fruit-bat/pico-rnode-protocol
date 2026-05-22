@@ -293,7 +293,6 @@ static void test_decoder_transmit(void) {
         'o', // Payload byte 4
     };
 
-
     pico_rnode_proto_command_decoder_start(&decoder);
 
     pico_rnode_proto_decoder_status_t status1 = pico_rnode_proto_command_decoder_put(
@@ -333,8 +332,8 @@ static void test_decoder_transmit(void) {
 }
 
 static void test_decoder_transmit_abort(void) {
-    pico_rnode_proto_command_decoder_t decoder = {0};
     static uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_t decoder = {0};
     pico_rnode_proto_command_decoder_init(
         &decoder,
         &test_context, // context
@@ -403,6 +402,57 @@ static void test_decoder_transmit_abort(void) {
     assert(error_status == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
 }
 
+static void test_decoder_set_frequency_error(void) {
+    static uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    pico_rnode_proto_command_decoder_init(
+        &decoder,
+        &test_context, // context
+        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
+        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
+        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
+        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
+        pico_rnode_proto_decoder_error_cb_test  // error_cb
+    );
+
+    // Set frequency command on interface 1 with frequency 867252736 Hz
+    // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
+    const uint8_t frame[] = { 
+        0x11, // Interface 1, opcode 1 (set frequency)
+        0x33, // Payload byte 0 (MSB)
+        0xB1, // Payload byte 1
+        0x3A, // Payload byte 2
+    }; // Missing payload byte 3 (LSB)
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(bandwidth_cb_count == 0);
+    assert(frequency_cb_count == 0); // Callback should not be called due to error
+    assert(txpower_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 1);
+
+    assert(error_context == &test_context);
+    assert(error_interface == 1);
+    assert(error_opcode == 1);
+    assert(error_index == 3); // Error should occur on the missing byte index
+    assert(error_status == PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH);
+}
+
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
     reset_callback_counts();
@@ -416,6 +466,8 @@ int main(void) {
     run_test("decoder_set_txpower", test_decoder_set_txpower);
     run_test("decoder_transmit", test_decoder_transmit);
     run_test("decoder_transmit_abort", test_decoder_transmit_abort);
+    run_test("decoder_set_frequency_error", test_decoder_set_frequency_error);
+    
     printf("All tests passed.\n");
     return 0;
 }
