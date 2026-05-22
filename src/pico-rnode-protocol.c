@@ -2,6 +2,10 @@
 // Copyright (c) 2026 fruit-bat
 #include "pico-rnode-protocol.h"
 
+// -----------------------------------------------------------
+// Decoder for incoming protocol commands.
+// -----------------------------------------------------------
+
 void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_decoder_t *decoder,
     void * context,
@@ -173,7 +177,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
         }
         case PICO_RNODE_PROTO_DECODER_STATE_STREAM_DATA: {
             if (decoder->tx_data_cb) {
-                pico_rnode_proto_data_decoder_cb_status_t cb_status = decoder->tx_data_cb(
+                pico_rnode_proto_frame_cb_status_t cb_status = decoder->tx_data_cb(
                     decoder->context,
                     decoder->interface,
                     byte,
@@ -268,3 +272,127 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
 
     return status;
 }
+
+// -----------------------------------------------------------
+// Encoder for outgoing protocol commands.
+// -----------------------------------------------------------
+
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t byte
+) {
+    if (encoder->put_cb) {
+        return encoder->put_cb(encoder->context, byte);
+    }
+    else {
+        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+    }
+}
+
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    rnode_opcode_t opcode
+) {
+    return pico_rnode_proto_command_send_byte(encoder, (interface << 4) | (opcode & 0x0F));
+}
+
+// Status translation helper for command encoder functions
+static pico_rnode_proto_encoder_status_t translate_frame_cb_status(
+    pico_rnode_proto_frame_cb_status_t frame_status
+) {
+    switch (frame_status) {
+        case PICO_RNODE_PROTO_FRAME_CB_STATUS_OK:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
+        case PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED;
+        default:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED; // Treat unknown status as abort
+    }
+}
+
+static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_bytes(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    rnode_opcode_t opcode,
+    uint8_t* bytes,
+    size_t len // 0-4
+) {
+    // Start the transmission frame
+    pico_rnode_proto_encoder_status_t status = encoder->start_cb(encoder->context);
+
+    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(status);
+    }
+
+    // Send the header
+    status = pico_rnode_proto_command_send_header(encoder, interface, opcode);
+
+    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(status);
+    }
+
+    // Send the payload
+    for (size_t i = 0; i < len; i++) {
+        status = pico_rnode_proto_command_send_byte(encoder, bytes[i]);
+        if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+            return translate_frame_cb_status(status);
+        }
+    }
+
+    // End the transmission frame
+    status = encoder->end_cb(encoder->context);
+    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(status);
+    }
+
+    return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
+}
+
+static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_word(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    rnode_opcode_t opcode,
+    uint32_t word
+) {
+    uint8_t bytes[4];
+    bytes[0] = (word >> 24) & 0xFF;
+    bytes[1] = (word >> 16) & 0xFF;
+    bytes[2] = (word >> 8) & 0xFF;
+    bytes[3] = word & 0xFF;
+    return pico_rnode_proto_command_send_command_and_bytes(encoder, interface, opcode, bytes, 4);
+}
+
+static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_byte(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    rnode_opcode_t opcode,
+    uint8_t value
+) {
+    return pico_rnode_proto_command_send_command_and_bytes(encoder, interface, opcode, &value, 1);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_frequency(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint32_t hz
+) {
+    return pico_rnode_proto_command_send_command_and_word(encoder, interface, RNODE_OPCODE_FREQUENCY, hz);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint32_t bandwidth
+) {
+    return pico_rnode_proto_command_send_command_and_word(encoder, interface, RNODE_OPCODE_BANDWIDTH, bandwidth);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    int8_t dbm
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_TXPOWER, (uint8_t)dbm);
+}
+

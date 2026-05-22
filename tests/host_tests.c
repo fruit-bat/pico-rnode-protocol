@@ -95,7 +95,7 @@ void pico_rnode_proto_cmd_tx_start_cb_test(
     tx_start_cb_count++;
 }
 
-pico_rnode_proto_data_decoder_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
     void * context,
     uint8_t interface,
     uint8_t byte,
@@ -467,7 +467,7 @@ int main(void) {
     run_test("decoder_transmit", test_decoder_transmit);
     run_test("decoder_transmit_abort", test_decoder_transmit_abort);
     run_test("decoder_set_frequency_error", test_decoder_set_frequency_error);
-    
+
     printf("All tests passed.\n");
     return 0;
 }
