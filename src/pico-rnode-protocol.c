@@ -32,6 +32,21 @@ void pico_rnode_proto_command_decoder_init(
     decoder->error_cb = error_cb;
 }
 
+// RNODE commands
+// | Opcode | Name        | Payload  |
+// | ------ | ----------- | -------- |
+// | `0x00` | DATA        | variable |
+// | `0x01` | FREQUENCY   | `u32`    |
+// | `0x02` | BANDWIDTH   | `u32`    |
+// | `0x03` | TXPOWER     | `u8`     |
+// | `0x04` | SF          | `u8`     |
+// | `0x05` | CR          | `u8`     |
+// | `0x06` | RADIO_STATE | `u8`     |
+// | `0x07` | RADIO_LOCK  | `u8`     |
+// | `0x08` | DETECT      | `u8`     |
+// | `0x0A` | LEAVE       | `u8`     |
+// | `0x0F` | READY       | empty    |
+
 typedef enum {
     RNODE_OPCODE_DATA              = 0x00,
     RNODE_OPCODE_FREQUENCY         = 0x01,
@@ -40,6 +55,7 @@ typedef enum {
     RNODE_OPCODE_SF                = 0x04,
     RNODE_OPCODE_CR                = 0x05,
     RNODE_OPCODE_RADIO_STATE       = 0x06,
+    RNODE_OPCODE_RADIO_LOCK        = 0x07,
     RNODE_OPCODE_DETECT            = 0x08,
     RNODE_OPCODE_LEAVE             = 0x0A,
     RNODE_OPCODE_READY             = 0x0F,
@@ -277,6 +293,20 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
 // Encoder for outgoing protocol commands.
 // -----------------------------------------------------------
 
+void pico_rnode_proto_command_encoder_init(
+    pico_rnode_proto_command_encoder_t *encoder,
+    void * context,
+    pico_rnode_proto_cmd_start_cb_t start_cb,
+    pico_rnode_proto_cmd_put_cb_t put_cb,
+    pico_rnode_proto_cmd_end_cb_t end_cb
+) {
+    encoder->context = context;
+    encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
+    encoder->start_cb = start_cb;
+    encoder->put_cb = put_cb;
+    encoder->end_cb = end_cb;
+}
+
 static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t byte
@@ -318,6 +348,11 @@ static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_a
     uint8_t* bytes,
     size_t len // 0-4
 ) {
+    // Check we are not currently transmitting another command
+    if (encoder->state == PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
+        return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
+    }
+
     // Start the transmission frame
     pico_rnode_proto_encoder_status_t status = encoder->start_cb(encoder->context);
 

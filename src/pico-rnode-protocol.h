@@ -32,13 +32,15 @@ typedef enum {
 typedef enum {
     PICO_RNODE_PROTO_ENCODER_STATUS_OK = 0,
     PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED,
+
+    // A transmission is in progress but an attempt was made to send a command 
+    PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR,
+
 } pico_rnode_proto_encoder_status_t;
 
 // -----------------------------------------------------------
 // Decoder for incoming protocol commands.
 // -----------------------------------------------------------
-
-
 
 /**
  * Callback invoked for each transmit/receive byte.
@@ -208,13 +210,18 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_put_cb_t)(
     uint8_t byte
 );
 
-// TODO this should probably have a return status
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
     void * context
 );
 
+typedef enum {
+    PICO_RNODE_PROTO_ENCODER_STATE_IDLE = 0,
+    PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING,
+} pico_rnode_proto_encoder_state_t;
+
 typedef struct {
     void * context;
+    pico_rnode_proto_encoder_state_t state;
     pico_rnode_proto_cmd_start_cb_t start_cb;
     pico_rnode_proto_cmd_put_cb_t put_cb;
     pico_rnode_proto_cmd_end_cb_t end_cb;
