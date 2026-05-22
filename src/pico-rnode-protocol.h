@@ -18,15 +18,6 @@ extern "C" {
  * Multiple RNode commands MUST NOT appear in a single KISS frame.
  */
 
-/**
- * Decoder status values returned by the transmit parser.
- */
-// TODO not used at present, but may be useful for future error handling and flow control features
-typedef enum {
-    PICO_RNODE_PROTO_FRAME_STATUS_OK = 0,
-    PICO_RNODE_PROTO_FRAME_STATUS_ABORTED,
-} pico_rnode_proto_stream_status_t;
-
 typedef enum {
     PICO_RNODE_PROTO_FRAME_CB_STATUS_OK = 0,
     PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT = 1,
