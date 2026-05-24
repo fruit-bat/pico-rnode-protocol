@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 fruit-bat
 #include "pico-rnode-protocol.h"
-
+#include <stdio.h>
 // -----------------------------------------------------------
 // Decoder for incoming protocol commands.
 // -----------------------------------------------------------
@@ -158,13 +158,12 @@ static int32_t rnode_proto_opcode_length(rnode_opcode_t opcode) {
         case RNODE_OPCODE_SF:
         case RNODE_OPCODE_CR:
         case RNODE_OPCODE_RADIO_STATE:
-            return 1;
         case RNODE_OPCODE_DETECT:
         case RNODE_OPCODE_LEAVE:
-        case RNODE_OPCODE_READY:
-            return 0;
         case RNODE_OPCODE_RADIO_LOCK:
             return 1;
+        case RNODE_OPCODE_READY:
+            return 0;
         default:
             return -2; // unknown opcode
     }
@@ -195,6 +194,8 @@ static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_
         value <<= 8;
         value |= ((uint32_t)decoder->smallbuf[i]);
     }
+    fprintf(stderr, "Fixed-length command received with interface %u and value %u\n", decoder->interface, value);
+
     switch (decoder->opcode) {
         case RNODE_OPCODE_FREQUENCY:
             if (decoder->set_frequency_cb) {
@@ -240,9 +241,11 @@ static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_
             }
             break;
         case RNODE_OPCODE_DETECT:
+        fprintf(stderr, "DETECT command received with interface %u\n", value);
             switch (value) {
                 case RNODE_DETECT_REQ:
                     if (decoder->detect_cb) {
+                        fprintf(stderr, "Invoking detect callback for interface %u\n", decoder->interface);
                         decoder->detect_cb(decoder->context);
                     }
                     break;

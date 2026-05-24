@@ -249,6 +249,45 @@ static void init_test_decoder(
     );
 }
 
+static void test_decoder_detect(void) {
+    uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    init_test_decoder(&decoder, &test_context);
+
+    // Detect command on interface 1
+    const uint8_t frame[] = { 
+        0x08,
+        0x73 
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(detect_cb_count == 1);
+    assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
+}
+
 static void test_decoder_set_coding_rate(void) {
     uint32_t test_context = 0xDEADBEEF;
     pico_rnode_proto_command_decoder_t decoder = {0};
@@ -685,6 +724,7 @@ static void run_test(const char *name, void (*fn)(void)) {
 }
 
 int main(void) {
+    run_test("decoder_detect", test_decoder_detect);
     run_test("decoder_set_bandwidth", test_decoder_set_bandwidth);
     run_test("decoder_set_frequency", test_decoder_set_frequency);
     run_test("decoder_set_txpower", test_decoder_set_txpower);
