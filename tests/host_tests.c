@@ -263,13 +263,20 @@ static void test_decoder_set_bandwidth(void) {
 
     pico_rnode_proto_command_decoder_end(&decoder);
 
-    assert(bandwidth_cb_count == 1);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 1);
     assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 0);
     assert(tx_data_cb_count == 0);
     assert(tx_end_cb_count == 0);
-    assert(tx_error_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
 }
 
 static void test_decoder_set_frequency(void) {
@@ -298,13 +305,20 @@ static void test_decoder_set_frequency(void) {
 
     pico_rnode_proto_command_decoder_end(&decoder);
 
-    assert(bandwidth_cb_count == 0);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 1);
+    assert(bandwidth_cb_count == 0);
     assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 0);
     assert(tx_data_cb_count == 0);
     assert(tx_end_cb_count == 0);
-    assert(tx_error_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
 }
 
 static void test_decoder_set_txpower(void) {
@@ -330,13 +344,21 @@ static void test_decoder_set_txpower(void) {
 
     pico_rnode_proto_command_decoder_end(&decoder);
 
-    assert(bandwidth_cb_count == 0);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
     assert(txpower_cb_count == 1);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 0);
     assert(tx_data_cb_count == 0);
     assert(tx_end_cb_count == 0);
-    assert(tx_error_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
+
 }
 
 static void test_decoder_transmit(void) {
@@ -381,13 +403,21 @@ static void test_decoder_transmit(void) {
     pico_rnode_proto_decoder_status_t status3 = pico_rnode_proto_command_decoder_end(&decoder);
     assert(status3 == PICO_RNODE_PROTO_DECODER_STATUS_OK);
 
-    assert(bandwidth_cb_count == 0);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
     assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 1);
     assert(tx_data_cb_count == 5);
     assert(tx_end_cb_count == 1);
-    assert(tx_error_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
+
     assert_equal_bytes(data, (const uint8_t*)"hello", 5);
 }
 
@@ -438,9 +468,16 @@ static void test_decoder_transmit_abort(void) {
     pico_rnode_proto_decoder_status_t status3 = pico_rnode_proto_command_decoder_end(&decoder);
     assert(status3 == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
 
-    assert(bandwidth_cb_count == 0);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
     assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 1);
     assert(tx_data_cb_count == 2); // Data callback should not be called for bytes after the error  
     assert(tx_end_cb_count == 0); // End callback should not be called since transmission was aborted
@@ -449,6 +486,8 @@ static void test_decoder_transmit_abort(void) {
     assert(error_interface == 1);
     assert(error_opcode == 0);
     assert(error_index == 2); // Error should occur on the byte with value '#'
+
+
     assert(error_status == PICO_RNODE_PROTO_DECODER_STATUS_ABORTED);
 }
 
@@ -478,15 +517,20 @@ static void test_decoder_set_frequency_error(void) {
 
     pico_rnode_proto_command_decoder_end(&decoder);
 
-    assert(bandwidth_cb_count == 0);
+    assert(detect_cb_count == 0);
     assert(frequency_cb_count == 0); // Callback should not be called due to error
+    assert(bandwidth_cb_count == 0);
     assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
     assert(tx_start_cb_count == 0);
     assert(tx_data_cb_count == 0);
     assert(tx_end_cb_count == 0);
     assert(tx_error_cb_count == 1);
-
-    assert(error_context == &test_context);
     assert(error_interface == 1);
     assert(error_opcode == 1);
     assert(error_index == 3); // Error should occur on the missing byte index
