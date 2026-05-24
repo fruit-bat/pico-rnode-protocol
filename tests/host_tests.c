@@ -23,13 +23,21 @@ static void assert_equal_bytes(const uint8_t *actual, const uint8_t *expected, s
     }
 }
 
+static uint32_t detect_cb_count = 0;
 static uint32_t frequency_cb_count = 0;
 static uint32_t bandwidth_cb_count = 0;
 static uint32_t txpower_cb_count = 0;
+static uint32_t coding_rate_cb_count = 0;
+static uint32_t spreading_factor_cb_count = 0;
+static uint32_t radio_state_cb_count = 0;
+static uint32_t ready_cb_count = 0;
+static uint32_t leave_cb_count = 0;
+static uint32_t lock_cb_count = 0;
 static uint32_t tx_start_cb_count = 0;
 static uint32_t tx_data_cb_count = 0;
 static uint32_t tx_end_cb_count = 0;
 static uint32_t tx_error_cb_count = 0;
+
 static uint8_t data[9] = {0};
 static void* error_context = NULL;
 static uint8_t error_interface = 0;
@@ -38,9 +46,16 @@ static uint32_t error_index = 0;
 static pico_rnode_proto_decoder_status_t error_status = 0;
 
 void reset_callback_counts(void) {
+    detect_cb_count = 0;
     frequency_cb_count = 0;
     bandwidth_cb_count = 0;
     txpower_cb_count = 0;
+    coding_rate_cb_count = 0;
+    spreading_factor_cb_count = 0;
+    radio_state_cb_count = 0;
+    ready_cb_count = 0;
+    leave_cb_count = 0;
+    lock_cb_count = 0;
     tx_start_cb_count = 0;
     tx_data_cb_count = 0;
     tx_end_cb_count = 0;
@@ -84,6 +99,67 @@ void pico_rnode_proto_cmd_set_txpower_cb_test(
     assert(interface == 1);
     assert(dbm == 14);
     txpower_cb_count++;
+}
+
+void pico_rnode_proto_command_detect_cb_test(
+    void * context
+) {
+    fprintf(stderr, "detect_cb called\n");
+    detect_cb_count++;
+}
+
+void pico_rnode_proto_command_set_spreading_factor_cb_test(
+    void * context,
+    uint8_t interface,
+    uint8_t spreading_factor
+) {
+    fprintf(stderr, "set_spreading_factor_cb called with interface=%u, spreading_factor=%u\n", interface, spreading_factor);
+    assert(interface == 1);
+    assert(spreading_factor == 7);
+    spreading_factor_cb_count++;
+}
+
+void pico_rnode_proto_command_set_coding_rate_cb_test(
+    void * context,
+    uint8_t interface,
+    uint8_t coding_rate
+) {
+    fprintf(stderr, "set_coding_rate_cb called with interface=%u, coding_rate=%u\n", interface, coding_rate);
+    assert(interface == 1);
+    assert(coding_rate == 5);
+    coding_rate_cb_count++;
+}
+
+void pico_rnode_proto_command_set_radio_state_cb_test(
+    void * context,
+    uint8_t interface,
+    pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
+) {
+    fprintf(stderr, "set_radio_state_cb called with interface=%u, state=%u\n", interface, state);
+    assert(interface == 1);
+    assert(state == RNODE_RADIO_STATE_ON);
+    radio_state_cb_count++;
+}
+
+void pico_rnode_proto_command_ready_cb_test(
+    void * context
+) {
+    fprintf(stderr, "ready_cb called\n");
+    ready_cb_count++;
+}
+
+void pico_rnode_proto_command_leave_cb_test(
+    void * context
+) {
+    fprintf(stderr, "leave_cb called\n");
+    leave_cb_count++;
+}
+
+void pico_rnode_proto_command_lock_cb_test(
+    void * context
+) {
+    fprintf(stderr, "lock_cb called\n");
+    lock_cb_count++;
 }
 
 void pico_rnode_proto_cmd_tx_start_cb_test(
@@ -137,19 +213,33 @@ void pico_rnode_proto_cmd_set_bandwidth_cb_test(
     bandwidth_cb_count++;
 }
 
-static void test_decoder_set_bandwidth(void) {
-    pico_rnode_proto_command_decoder_t decoder = {0};
+static void init_test_decoder(
+    pico_rnode_proto_command_decoder_t *decoder,
+    void * context
+) {
     pico_rnode_proto_command_decoder_init(
-        &decoder,
-        NULL, // context
+        decoder,
+        context,
+        pico_rnode_proto_command_detect_cb_test, // detect_cb
         pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
         pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
         pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
+        pico_rnode_proto_command_set_spreading_factor_cb_test, // set_spreading_factor_cb
+        pico_rnode_proto_command_set_coding_rate_cb_test, // set_coding_rate_cb
+        pico_rnode_proto_command_set_radio_state_cb_test, // set_radio_state_cb
+        pico_rnode_proto_command_ready_cb_test, // ready_cb
+        pico_rnode_proto_command_lock_cb_test, // lock_cb
+        pico_rnode_proto_command_leave_cb_test, // leave_cb
         pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
         pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
         pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
         pico_rnode_proto_decoder_error_cb_test  // error_cb
     );
+}
+
+static void test_decoder_set_bandwidth(void) {
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    init_test_decoder(&decoder, NULL);
 
     // Set bandwidth command on interface 1 with bandwidth 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
@@ -184,17 +274,7 @@ static void test_decoder_set_bandwidth(void) {
 
 static void test_decoder_set_frequency(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
-    pico_rnode_proto_command_decoder_init(
-        &decoder,
-        NULL, // context
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_decoder_error_cb_test  // error_cb
-    );
+    init_test_decoder(&decoder, NULL);
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
@@ -229,17 +309,7 @@ static void test_decoder_set_frequency(void) {
 
 static void test_decoder_set_txpower(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
-    pico_rnode_proto_command_decoder_init(
-        &decoder,
-        NULL, // context
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_decoder_error_cb_test // error_cb
-    );
+    init_test_decoder(&decoder, NULL);
 
     // Set txpower command on interface 1 with txpower 14 dBm
     // Values are big-endian on the wire, so the payload bytes are reversed from the int8_t literal
@@ -271,17 +341,7 @@ static void test_decoder_set_txpower(void) {
 
 static void test_decoder_transmit(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
-    pico_rnode_proto_command_decoder_init(
-        &decoder,
-        NULL, // context
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_decoder_error_cb_test // error_cb
-    );
+    init_test_decoder(&decoder, NULL);
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
@@ -334,18 +394,8 @@ static void test_decoder_transmit(void) {
 static void test_decoder_transmit_abort(void) {
     static uint32_t test_context = 0xDEADBEEF;
     pico_rnode_proto_command_decoder_t decoder = {0};
-    pico_rnode_proto_command_decoder_init(
-        &decoder,
-        &test_context, // context
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_decoder_error_cb_test // error_cb
-    );
-
+    init_test_decoder(&decoder, &test_context);
+    
     // Set frequency command on interface 1 with frequency 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal
     const uint8_t data_head[] = {
@@ -405,17 +455,7 @@ static void test_decoder_transmit_abort(void) {
 static void test_decoder_set_frequency_error(void) {
     static uint32_t test_context = 0xDEADBEEF;
     pico_rnode_proto_command_decoder_t decoder = {0};
-    pico_rnode_proto_command_decoder_init(
-        &decoder,
-        &test_context, // context
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
-        pico_rnode_proto_decoder_error_cb_test  // error_cb
-    );
+    init_test_decoder(&decoder, &test_context);
 
     // Set frequency command on interface 1 with frequency 867252736 Hz
     // Values are big-endian on the wire, so the payload bytes are reversed from the uint32_t literal

@@ -27,6 +27,7 @@ typedef enum {
     PICO_RNODE_PROTO_DECODER_STATUS_ABORTED,
     PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH,
     PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE,
+    PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT
 } pico_rnode_proto_decoder_status_t;
 
 typedef enum {
@@ -37,6 +38,12 @@ typedef enum {
     PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR,
 
 } pico_rnode_proto_encoder_status_t;
+
+typedef enum {
+    RNODE_RADIO_STATE_OFF = 0x00,
+    RNODE_RADIO_STATE_ON  = 0x01,
+    RNODE_RADIO_STATE_ASK = 0xFF
+} pico_rnode_proto_radio_state_t;
 
 // -----------------------------------------------------------
 // Decoder for incoming protocol commands.
@@ -120,6 +127,40 @@ typedef void (*pico_rnode_proto_cmd_set_txpower_cb_t)(
     int8_t dbm
 );
 
+typedef void (*pico_rnode_proto_command_set_spreading_factor_cb_t)(
+    void * context,
+    uint8_t interface,
+    uint8_t sf // spreading factor, for LoRa radios (typically 6-12)
+);
+
+typedef void (*pico_rnode_proto_command_set_coding_rate_cb_t)(
+    void * context,
+    uint8_t interface,
+    uint8_t cr // coding rate, for LoRa radios (typically 5-8)
+);
+
+typedef void (*pico_rnode_proto_command_detect_cb_t)(
+    void * context
+);
+
+typedef void (*pico_rnode_proto_command_set_radio_state_cb_t)(
+    void * context,
+    uint8_t interface,
+    pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
+);
+
+typedef void (*pico_rnode_proto_command_ready_cb_t)(
+    void * context
+);
+
+typedef void (*pico_rnode_proto_command_leave_cb_t)(
+    void * context
+);
+
+typedef void (*pico_rnode_proto_command_lock_cb_t)(
+    void * context
+);
+
 // Decoder states for the command decoder state machine
 typedef enum {
     PICO_RNODE_PROTO_DECODER_STATE_WAIT_COMMAND,
@@ -151,10 +192,16 @@ typedef struct {
     pico_rnode_proto_decode_state_t state;
 
     // Command callbacks
+    pico_rnode_proto_command_detect_cb_t detect_cb;
     pico_rnode_proto_cmd_set_frequency_cb_t set_frequency_cb;
     pico_rnode_proto_cmd_set_bandwidth_cb_t set_bandwidth_cb;
     pico_rnode_proto_cmd_set_txpower_cb_t set_txpower_cb;
-    
+    pico_rnode_proto_command_set_spreading_factor_cb_t set_spreading_factor_cb;
+    pico_rnode_proto_command_set_coding_rate_cb_t set_coding_rate_cb;
+    pico_rnode_proto_command_set_radio_state_cb_t set_radio_state_cb;
+    pico_rnode_proto_command_ready_cb_t ready_cb;
+    pico_rnode_proto_command_lock_cb_t lock_cb;
+    pico_rnode_proto_command_leave_cb_t leave_cb;
     // Transmit command callbacks
     // TODO lose the tx_prefix(?)
     pico_rnode_proto_data_decoder_start_cb_t tx_start_cb;
@@ -169,9 +216,16 @@ typedef struct {
 void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_decoder_t *decoder,
     void * context,
+    pico_rnode_proto_command_detect_cb_t detect_cb,
     pico_rnode_proto_cmd_set_frequency_cb_t set_frequency_cb,
     pico_rnode_proto_cmd_set_bandwidth_cb_t set_bandwidth_cb,
     pico_rnode_proto_cmd_set_txpower_cb_t set_txpower_cb,
+    pico_rnode_proto_command_set_spreading_factor_cb_t set_spreading_factor_cb,
+    pico_rnode_proto_command_set_coding_rate_cb_t set_coding_rate_cb,
+    pico_rnode_proto_command_set_radio_state_cb_t set_radio_state_cb,
+    pico_rnode_proto_command_ready_cb_t ready_cb,
+    pico_rnode_proto_command_lock_cb_t lock_cb,
+    pico_rnode_proto_command_leave_cb_t leave_cb,
     pico_rnode_proto_data_decoder_start_cb_t tx_start_cb,
     pico_rnode_proto_data_decoder_data_cb_t tx_data_cb,
     pico_rnode_proto_data_decoder_end_cb_t tx_end_cb,
@@ -264,12 +318,6 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
     uint8_t interface,
     uint8_t cr // coding rate, for LoRa radios (typically 5-8)
 );
-
-typedef enum {
-    RNODE_RADIO_STATE_OFF = 0x00,
-    RNODE_RADIO_STATE_ON  = 0x01,
-    RNODE_RADIO_STATE_ASK = 0xFF
-} pico_rnode_proto_radio_state_t;
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
     pico_rnode_proto_command_encoder_t *encoder,
