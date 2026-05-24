@@ -79,7 +79,7 @@ void pico_rnode_proto_decoder_error_cb_test(
     tx_error_cb_count++;
 }
 
-void pico_rnode_proto_cmd_set_frequency_cb_test(
+void pico_rnode_proto_command_set_frequency_cb_test(
     void * context,
     uint8_t interface,
     uint32_t frequency_hz
@@ -90,7 +90,7 @@ void pico_rnode_proto_cmd_set_frequency_cb_test(
     frequency_cb_count++;
 }
 
-void pico_rnode_proto_cmd_set_txpower_cb_test(
+void pico_rnode_proto_command_set_txpower_cb_test(
     void * context,
     uint8_t interface,
     int8_t dbm
@@ -162,7 +162,7 @@ void pico_rnode_proto_command_lock_cb_test(
     lock_cb_count++;
 }
 
-void pico_rnode_proto_cmd_tx_start_cb_test(
+void pico_rnode_proto_command_tx_start_cb_test(
     void * context,
     uint8_t interface
 ) {
@@ -171,7 +171,7 @@ void pico_rnode_proto_cmd_tx_start_cb_test(
     tx_start_cb_count++;
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_tx_data_cb_test(
     void * context,
     uint8_t interface,
     uint8_t byte,
@@ -192,7 +192,7 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_tx_data_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-void pico_rnode_proto_cmd_tx_end_cb_test(
+void pico_rnode_proto_command_tx_end_cb_test(
     void * context,
     uint8_t interface,
     uint32_t len
@@ -202,7 +202,7 @@ void pico_rnode_proto_cmd_tx_end_cb_test(
     tx_end_cb_count++;
 }
 
-void pico_rnode_proto_cmd_set_bandwidth_cb_test(
+void pico_rnode_proto_command_set_bandwidth_cb_test(
     void * context,
     uint8_t interface,
     uint32_t bandwidth
@@ -221,18 +221,18 @@ static void init_test_decoder(
         decoder,
         context,
         pico_rnode_proto_command_detect_cb_test, // detect_cb
-        pico_rnode_proto_cmd_set_frequency_cb_test, // set_frequency_cb
-        pico_rnode_proto_cmd_set_bandwidth_cb_test, // set_bandwidth_cb
-        pico_rnode_proto_cmd_set_txpower_cb_test, // set_txpower_cb
+        pico_rnode_proto_command_set_frequency_cb_test, // set_frequency_cb
+        pico_rnode_proto_command_set_bandwidth_cb_test, // set_bandwidth_cb
+        pico_rnode_proto_command_set_txpower_cb_test, // set_txpower_cb
         pico_rnode_proto_command_set_spreading_factor_cb_test, // set_spreading_factor_cb
         pico_rnode_proto_command_set_coding_rate_cb_test, // set_coding_rate_cb
         pico_rnode_proto_command_set_radio_state_cb_test, // set_radio_state_cb
         pico_rnode_proto_command_ready_cb_test, // ready_cb
         pico_rnode_proto_command_lock_cb_test, // lock_cb
         pico_rnode_proto_command_leave_cb_test, // leave_cb
-        pico_rnode_proto_cmd_tx_start_cb_test, // tx_start_cb
-        pico_rnode_proto_cmd_tx_data_cb_test, // tx_data_cb
-        pico_rnode_proto_cmd_tx_end_cb_test, // tx_end_cb
+        pico_rnode_proto_command_tx_start_cb_test, // tx_start_cb
+        pico_rnode_proto_command_tx_data_cb_test, // tx_data_cb
+        pico_rnode_proto_command_tx_end_cb_test, // tx_end_cb
         pico_rnode_proto_decoder_error_cb_test  // error_cb
     );
 }

@@ -109,19 +109,19 @@ typedef void (*pico_rnode_proto_decoder_error_cb_t)(
     pico_rnode_proto_decoder_status_t status
 );
 
-typedef void (*pico_rnode_proto_cmd_set_frequency_cb_t)(
+typedef void (*pico_rnode_proto_command_set_frequency_cb_t)(
     void * context,
     uint8_t interface,
     uint32_t hz
 );
 
-typedef void (*pico_rnode_proto_cmd_set_bandwidth_cb_t)(
+typedef void (*pico_rnode_proto_command_set_bandwidth_cb_t)(
     void * context,
     uint8_t interface,
     uint32_t bandwidth
 );
 
-typedef void (*pico_rnode_proto_cmd_set_txpower_cb_t)(
+typedef void (*pico_rnode_proto_command_set_txpower_cb_t)(
     void * context,
     uint8_t interface,
     int8_t dbm
@@ -193,9 +193,9 @@ typedef struct {
 
     // Command callbacks
     pico_rnode_proto_command_detect_cb_t detect_cb;
-    pico_rnode_proto_cmd_set_frequency_cb_t set_frequency_cb;
-    pico_rnode_proto_cmd_set_bandwidth_cb_t set_bandwidth_cb;
-    pico_rnode_proto_cmd_set_txpower_cb_t set_txpower_cb;
+    pico_rnode_proto_command_set_frequency_cb_t set_frequency_cb;
+    pico_rnode_proto_command_set_bandwidth_cb_t set_bandwidth_cb;
+    pico_rnode_proto_command_set_txpower_cb_t set_txpower_cb;
     pico_rnode_proto_command_set_spreading_factor_cb_t set_spreading_factor_cb;
     pico_rnode_proto_command_set_coding_rate_cb_t set_coding_rate_cb;
     pico_rnode_proto_command_set_radio_state_cb_t set_radio_state_cb;
@@ -217,9 +217,9 @@ void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_decoder_t *decoder,
     void * context,
     pico_rnode_proto_command_detect_cb_t detect_cb,
-    pico_rnode_proto_cmd_set_frequency_cb_t set_frequency_cb,
-    pico_rnode_proto_cmd_set_bandwidth_cb_t set_bandwidth_cb,
-    pico_rnode_proto_cmd_set_txpower_cb_t set_txpower_cb,
+    pico_rnode_proto_command_set_frequency_cb_t set_frequency_cb,
+    pico_rnode_proto_command_set_bandwidth_cb_t set_bandwidth_cb,
+    pico_rnode_proto_command_set_txpower_cb_t set_txpower_cb,
     pico_rnode_proto_command_set_spreading_factor_cb_t set_spreading_factor_cb,
     pico_rnode_proto_command_set_coding_rate_cb_t set_coding_rate_cb,
     pico_rnode_proto_command_set_radio_state_cb_t set_radio_state_cb,
