@@ -237,6 +237,45 @@ static void init_test_decoder(
     );
 }
 
+static void test_decoder_invalid_opcode(void) {
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    init_test_decoder(&decoder, NULL);
+
+    // Invalid opcode 0x0F on interface 1
+    const uint8_t frame[] = { 
+        0x19, // Interface 1, opcode 9 (invalid)
+        0x00, // Payload byte 0
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(detect_cb_count == 0);
+    assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 1); 
+}
+
+
 static void test_decoder_set_bandwidth(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
     init_test_decoder(&decoder, NULL);
@@ -551,6 +590,7 @@ int main(void) {
     run_test("decoder_transmit", test_decoder_transmit);
     run_test("decoder_transmit_abort", test_decoder_transmit_abort);
     run_test("decoder_set_frequency_error", test_decoder_set_frequency_error);
+    run_test("decoder_invalid_opcode", test_decoder_invalid_opcode);
 
     printf("All tests passed.\n");
     return 0;
