@@ -249,6 +249,45 @@ static void init_test_decoder(
     );
 }
 
+static void test_decoder_ready(void) {
+    uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    init_test_decoder(&decoder, &test_context);
+
+    // Ready command on interface 1
+    const uint8_t frame[] = { 
+        0x0f, // Interface 0 (global), opcode 15 (ready)
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(detect_cb_count == 0);
+    assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 0);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 1);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
+    assert(last_callback_context == &test_context);
+}
+
 static void test_decoder_detect(void) {
     uint32_t test_context = 0xDEADBEEF;
     pico_rnode_proto_command_decoder_t decoder = {0};
@@ -336,7 +375,7 @@ static void test_decoder_set_spreading_factor(void) {
 
     // Set spreading factor command on interface 1 with spreading factor 7
     const uint8_t frame[] = { 
-        0x17, // Interface 1, opcode 7 (set spreading factor)
+        0x14, // Interface 1, opcode 4 (set spreading factor)
         0x07, // Payload byte 0 (spreading factor)
     };
 
@@ -733,6 +772,9 @@ int main(void) {
     run_test("decoder_set_frequency_error", test_decoder_set_frequency_error);
     run_test("decoder_invalid_opcode", test_decoder_invalid_opcode);
     run_test("decoder_set_coding_rate", test_decoder_set_coding_rate);
+    run_test("decoder_set_spreading_factor", test_decoder_set_spreading_factor);
+    run_test("decoder_ready", test_decoder_ready);
+
 
     printf("All tests passed.\n");
     return 0;
