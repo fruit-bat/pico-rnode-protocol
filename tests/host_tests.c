@@ -249,6 +249,47 @@ static void init_test_decoder(
     );
 }
 
+static void test_decoder_set_coding_rate(void) {
+    uint32_t test_context = 0xDEADBEEF;
+    pico_rnode_proto_command_decoder_t decoder = {0};
+    init_test_decoder(&decoder, &test_context);
+
+    // Set coding rate command on interface 1 with coding rate 5
+    // Values are big-endian on the wire, so the payload byte is reversed from the uint8_t literal
+    const uint8_t frame[] = { 
+        0x15, // Interface 1, opcode 5 (set coding rate)
+        0x05, // Payload byte 0 (coding rate)
+    };
+
+    pico_rnode_proto_command_decoder_start(&decoder);
+
+    pico_rnode_proto_decoder_status_t status = pico_rnode_proto_command_decoder_write(
+        &decoder,
+        frame,
+        sizeof(frame)
+    );
+
+    assert(status == PICO_RNODE_PROTO_DECODER_STATUS_OK);
+
+    pico_rnode_proto_command_decoder_end(&decoder);
+
+    assert(detect_cb_count == 0);
+    assert(frequency_cb_count == 0);
+    assert(bandwidth_cb_count == 0);
+    assert(txpower_cb_count == 0);
+    assert(coding_rate_cb_count == 1);
+    assert(spreading_factor_cb_count == 0);
+    assert(radio_state_cb_count == 0);
+    assert(ready_cb_count == 0);
+    assert(leave_cb_count == 0);
+    assert(lock_cb_count == 0);
+    assert(tx_start_cb_count == 0);
+    assert(tx_data_cb_count == 0);
+    assert(tx_end_cb_count == 0);
+    assert(tx_error_cb_count == 0); 
+    assert(last_callback_context == &test_context);
+}
+
 static void test_decoder_set_spreading_factor(void) {
     uint32_t test_context = 0xDEADBEEF;
     pico_rnode_proto_command_decoder_t decoder = {0};
@@ -651,6 +692,7 @@ int main(void) {
     run_test("decoder_transmit_abort", test_decoder_transmit_abort);
     run_test("decoder_set_frequency_error", test_decoder_set_frequency_error);
     run_test("decoder_invalid_opcode", test_decoder_invalid_opcode);
+    run_test("decoder_set_coding_rate", test_decoder_set_coding_rate);
 
     printf("All tests passed.\n");
     return 0;
