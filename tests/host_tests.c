@@ -237,6 +237,8 @@ static void init_test_decoder(
     );
 }
 
+
+
 static void test_decoder_invalid_opcode(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
     init_test_decoder(&decoder, NULL);
@@ -274,7 +276,6 @@ static void test_decoder_invalid_opcode(void) {
     assert(tx_end_cb_count == 0);
     assert(tx_error_cb_count == 1); 
 }
-
 
 static void test_decoder_set_bandwidth(void) {
     pico_rnode_proto_command_decoder_t decoder = {0};
