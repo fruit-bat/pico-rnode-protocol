@@ -253,10 +253,37 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
     int8_t dbm
 );
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t sf // spreading factor, for LoRa radios (typically 6-12)
+);
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t cr // coding rate, for LoRa radios (typically 5-8)
+);
 
+typedef enum {
+    RNODE_RADIO_STATE_OFF = 0x00,
+    RNODE_RADIO_STATE_ON  = 0x01,
+    RNODE_RADIO_STATE_ASK = 0xFF
+} pico_rnode_proto_radio_state_t;
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
+);
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
+    pico_rnode_proto_command_encoder_t *encoder
+);
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
+    pico_rnode_proto_command_encoder_t *encoder
+);
 
 
 

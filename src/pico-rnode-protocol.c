@@ -498,3 +498,53 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
     return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_TXPOWER, (uint8_t)dbm);
 }
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t sf // spreading factor, for LoRa radios (typically 6-12)
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_SF, sf);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t cr // coding rate, for LoRa radios (typically 5-8)
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_CR, cr);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_RADIO_STATE, (uint8_t)state);
+}
+
+/**
+ * Send DETECT command on interface 0 (global) to perform radio detection.
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
+    pico_rnode_proto_command_encoder_t *encoder
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, 0, RNODE_OPCODE_DETECT, 0);
+}
+
+/**
+ * Send READY command on interface 0 (global).
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
+    pico_rnode_proto_command_encoder_t *encoder
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, 0, RNODE_OPCODE_READY, 0);
+}
+
+/**
+ * Send LEAVE command on interface 0 (global).
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
+    pico_rnode_proto_command_encoder_t *encoder
+) {
+    return pico_rnode_proto_command_send_command_and_byte(encoder, 0, RNODE_OPCODE_LEAVE, 0);
+}
