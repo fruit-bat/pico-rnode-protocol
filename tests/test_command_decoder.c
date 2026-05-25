@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "pico-rnode-protocol.h"
+#include "pico-rnode-protocol-command-decoder.h"
 #include "test_utils.h"
 
 

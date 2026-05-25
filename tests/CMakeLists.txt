@@ -7,9 +7,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 enable_testing()
 
 add_executable(host_tests
-  test_command_encoder.c
+  test_command_decoder.c
   test_utils.c
-  ../src/pico-rnode-protocol.c
+  ../src/pico-rnode-protocol-command-decoder.c
 )
 
 target_include_directories(host_tests PRIVATE

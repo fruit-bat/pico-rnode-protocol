@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // Copyright (c) 2026 fruit-bat
-#include "pico-rnode-protocol.h"
+#include "pico-rnode-protocol-command-decoder.h"
 
 #include <stdio.h>
 // -----------------------------------------------------------
