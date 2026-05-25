@@ -10,6 +10,7 @@ add_executable(host_tests
   test_command_decoder.c
   test_utils.c
   ../src/pico-rnode-protocol-command-decoder.c
+  ../src/pico-rnode-protocol-command-encoder.c
 )
 
 target_include_directories(host_tests PRIVATE
