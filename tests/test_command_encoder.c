@@ -6,22 +6,8 @@
 #include <stdint.h>
 
 #include "pico-rnode-protocol.h"
+#include "test_utils.h"
 
-static void assert_equal_bytes(const uint8_t *actual, const uint8_t *expected, size_t len) {
-    if (memcmp(actual, expected, len) != 0) {
-        fprintf(stderr, "Byte arrays differ:\n");
-        fprintf(stderr, "  expected:");
-        for (size_t i = 0; i < len; i++) {
-            fprintf(stderr, " %02X", expected[i]);
-        }
-        fprintf(stderr, "\n  actual:  ");
-        for (size_t i = 0; i < len; i++) {
-            fprintf(stderr, " %02X", actual[i]);
-        }
-        fprintf(stderr, "\n");
-        assert(0);
-    }
-}
 
 static uint32_t detect_cb_count = 0;
 static uint32_t frequency_cb_count = 0;
