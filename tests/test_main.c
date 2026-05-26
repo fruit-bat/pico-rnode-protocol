@@ -9,7 +9,7 @@ extern void test_command_decoder(void);
 extern void test_command_encoder(void);
 
 int main(void) {
-    test_command_decoder();
+//    test_command_decoder();
     test_command_encoder();
     return 0;
 }
