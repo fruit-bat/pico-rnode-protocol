@@ -24,7 +24,7 @@ static void clear_test_state(void) {
     last_callback_context = NULL;
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_start_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_start_cb_test(
     void * context
 ) {
     start_cb_count++;
@@ -34,7 +34,7 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_start_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_put_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_put_cb_test(
     void * context,
     uint8_t byte
 ) {
@@ -45,7 +45,7 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_put_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_end_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_end_cb_test(
     void * context
 ) {
     end_cb_count++;
@@ -54,7 +54,7 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_end_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-void pico_rnode_proto_command_encoder_init_test(
+static void pico_rnode_proto_command_encoder_init_test(
     pico_rnode_proto_command_encoder_t *encoder
 ) {
     pico_rnode_proto_command_encoder_init(
@@ -67,7 +67,7 @@ void pico_rnode_proto_command_encoder_init_test(
 }
 
 // Test encoding a set frequency command and verify the output frame
-void test_pico_rnode_proto_command_set_frequency(void) {
+static void test_pico_rnode_proto_command_set_frequency(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -102,7 +102,7 @@ void test_pico_rnode_proto_command_set_frequency(void) {
 }
 
 // Test encoding a set bandwidth command and verify the output frame
-void test_pico_rnode_proto_command_set_bandwidth(void) {
+static void test_pico_rnode_proto_command_set_bandwidth(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -137,7 +137,7 @@ void test_pico_rnode_proto_command_set_bandwidth(void) {
 }
 
 // Test encoding a set txpower command and verify the output frame
-void test_pico_rnode_proto_command_set_txpower(void) {
+static void test_pico_rnode_proto_command_set_txpower(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -169,7 +169,7 @@ void test_pico_rnode_proto_command_set_txpower(void) {
 }
 
 // Test encoding a set spreading factor command and verify the output frame
-void test_pico_rnode_proto_command_set_spreading_factor(void) {
+static void test_pico_rnode_proto_command_set_spreading_factor(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -201,7 +201,7 @@ void test_pico_rnode_proto_command_set_spreading_factor(void) {
 }
 
 // Test encoding a set coding rate command and verify the output frame
-void test_pico_rnode_proto_command_set_coding_rate(void) {
+static void test_pico_rnode_proto_command_set_coding_rate(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -232,7 +232,7 @@ void test_pico_rnode_proto_command_set_coding_rate(void) {
 }
 
 // Test encoding a set radio state command and verify the output frame
-void test_pico_rnode_proto_command_set_radio_state(void) {
+static void test_pico_rnode_proto_command_set_radio_state(void) {
 
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_encoder_status_t status;
@@ -261,6 +261,77 @@ void test_pico_rnode_proto_command_set_radio_state(void) {
     assert_equal_bytes(frame, data, sizeof(frame));
 }
 
+// Test encoding a detect command and verify the output frame
+static void test_pico_rnode_proto_command_detect(void) {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_encoder_status_t status;
+
+    pico_rnode_proto_command_encoder_init_test(&encoder);
+
+    status = pico_rnode_proto_command_detect(&encoder);
+    assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+
+    // The expected frame for the detect command on interface 0 is:
+    // Byte 0: 0x08 (Interface 0, opcode 8 - detect)
+    // Byte 1: 0x73 (Payload byte 0, detect request - RNODE_DETECT_REQ)
+    const uint8_t frame[] = { 
+        0x08, // Interface 0, opcode 8 (detect - RNODE_OPCODE_DETECT)
+        0x73, // Detect request (RNODE_DETECT_REQ)
+    };
+
+    assert(start_cb_count == 1);
+    assert(put_cb_count == sizeof(frame));
+    assert(end_cb_count == 1);
+    assert(last_callback_context == &test_context);
+    assert_equal_bytes(frame, data, sizeof(frame));
+}
+
+// Test encoding a ready command and verify the output frame
+static void test_pico_rnode_proto_command_ready(void) {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_encoder_status_t status;
+
+    pico_rnode_proto_command_encoder_init_test(&encoder);
+
+    status = pico_rnode_proto_command_ready(&encoder);
+    assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+
+    // The expected frame for the ready command on interface 0 is:
+    // Byte 0: 0x0f (Interface 0, opcode 15 - ready)
+    const uint8_t frame[] = { 
+        0x0F, // Interface 0, opcode 15 (ready - RNODE_OPCODE_READY)
+    };
+
+    assert(start_cb_count == 1);
+    assert(put_cb_count == sizeof(frame));
+    assert(end_cb_count == 1);
+    assert(last_callback_context == &test_context);
+    assert_equal_bytes(frame, data, sizeof(frame));
+}
+
+static void test_pico_rnode_proto_command_leave(void) {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_encoder_status_t status;
+
+    pico_rnode_proto_command_encoder_init_test(&encoder);
+
+    status = pico_rnode_proto_command_leave(&encoder);
+    assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+
+    // The expected frame for the leave command on interface 0 is:
+    // Byte 0: 0x0a (Interface 0, opcode 10 - leave)
+    const uint8_t frame[] = { 
+        0x0A, // Interface 0, opcode 10 (leave - RNODE_OPCODE_LEAVE)
+        0x00, // Payload byte 0 (reserved, set to 0)
+    };
+
+    assert(start_cb_count == 1);
+    assert(put_cb_count == sizeof(frame));
+    assert(end_cb_count == 1);
+    assert(last_callback_context == &test_context);
+    assert_equal_bytes(frame, data, sizeof(frame));
+}
+
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
     clear_test_state();
@@ -275,6 +346,9 @@ void test_command_encoder(void) {
     run_test("command_set_spreading_factor", test_pico_rnode_proto_command_set_spreading_factor);
     run_test("command_set_coding_rate", test_pico_rnode_proto_command_set_coding_rate);
     run_test("command_set_radio_state", test_pico_rnode_proto_command_set_radio_state);
+    run_test("command_detect", test_pico_rnode_proto_command_detect);
+    run_test("command_ready", test_pico_rnode_proto_command_ready);
+    run_test("command_leave", test_pico_rnode_proto_command_leave);
 
     fprintf(stderr, "All command encoder tests passed!\n");
 }

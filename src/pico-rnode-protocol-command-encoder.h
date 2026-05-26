@@ -97,6 +97,10 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
     pico_rnode_proto_command_encoder_t *encoder
 );
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
+    pico_rnode_proto_command_encoder_t *encoder
+);
+
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
 );
