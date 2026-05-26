@@ -8,3 +8,5 @@
 #include "pico-rnode-protocol-command-encoder.h"
 #include "test_utils.h"
 
+void test_command_encoder(void) {
+}

@@ -828,7 +828,7 @@ static void run_test(const char *name, void (*fn)(void)) {
     printf("[ PASS ] %s\n", name);
 }
 
-int main(void) {
+void test_command_decoder(void) {
     run_test("decoder_detect", test_decoder_detect);
     run_test("decoder_set_bandwidth", test_decoder_set_bandwidth);
     run_test("decoder_set_frequency", test_decoder_set_frequency);
@@ -843,6 +843,5 @@ int main(void) {
     run_test("decoder_lock", test_decoder_lock);
     run_test("decoder_leave", test_decoder_leave);
 
-    printf("All tests passed.\n");
-    return 0;
+    printf("All decoder tests passed.\n");
 }
