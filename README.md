@@ -25,4 +25,11 @@ cmake -S . -B build
 cmake --build build && ctest --verbose --test-dir build
 ```
 
+or for just specific tests
+```bash
+cd tests
+cmake -S . -B build
+cmake --build build && ctest --verbose --test-dir . -R host_tests_round_trip
+```
+
 This compiles `pico-rnode-protocol` as a normal host executable and runs the unit tests without Pico hardware.
