@@ -14,41 +14,97 @@ extern "C" {
 // Encoder for outgoing protocol commands.
 // -----------------------------------------------------------
 
+/**
+ * Encoder status codes.
+ *
+ * These values indicate whether a command was encoded successfully or whether
+ * the encoder encountered an error such as an in-progress frame conflict.
+ */
 typedef enum {
-    PICO_RNODE_PROTO_ENCODER_STATUS_OK = 0,
-    PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED,
-
-    // A transmission is in progress but an attempt was made to send a command 
-    PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR,
-
+    PICO_RNODE_PROTO_ENCODER_STATUS_OK = 0,    /**< Command encoded successfully. */
+    PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED,   /**< Encoding aborted by callback or internal error. */
+    PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR, /**< A frame is already open when a new command was requested. */
 } pico_rnode_proto_encoder_status_t;
 
+/**
+ * Callback invoked to begin a new command frame.
+ *
+ * Parameters:
+ * - context: user-provided opaque context pointer.
+ *
+ * Return:
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to continue encoding.
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the command.
+ */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_start_cb_t)(
     void * context
 );
 
+/**
+ * Callback invoked to emit a single command byte.
+ *
+ * Parameters:
+ * - context: user-provided opaque context pointer.
+ * - byte: byte to emit into the current frame.
+ *
+ * Return:
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to continue encoding.
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the command.
+ */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_put_cb_t)(
     void * context,
     uint8_t byte
 );
 
+/**
+ * Callback invoked to end the current command frame.
+ *
+ * Parameters:
+ * - context: user-provided opaque context pointer.
+ *
+ * Return:
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to finalize the frame.
+ * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the frame.
+ */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
     void * context
 );
 
+/**
+ * Encoder state machine state values.
+ */
 typedef enum {
-    PICO_RNODE_PROTO_ENCODER_STATE_IDLE = 0,
-    PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING,
+    PICO_RNODE_PROTO_ENCODER_STATE_IDLE = 0,        /**< Encoder is ready for a new command. */
+    PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING,    /**< A command frame is currently being emitted. */
 } pico_rnode_proto_encoder_state_t;
 
+/**
+ * Outgoing command encoder instance.
+ *
+ * This struct holds encoder state and the callbacks required to write bytes
+ * into the transport layer.
+ */
 typedef struct {
-    void * context;
-    pico_rnode_proto_encoder_state_t state;
-    pico_rnode_proto_cmd_start_cb_t start_cb;
-    pico_rnode_proto_cmd_put_cb_t put_cb;
-    pico_rnode_proto_cmd_end_cb_t end_cb;
+    void * context;                         /**< User-provided callback context. */
+    pico_rnode_proto_encoder_state_t state; /**< Current encoder state. */
+    pico_rnode_proto_cmd_start_cb_t start_cb; /**< Begin a command frame. */
+    pico_rnode_proto_cmd_put_cb_t put_cb;     /**< Emit a command byte. */
+    pico_rnode_proto_cmd_end_cb_t end_cb;     /**< End the command frame. */
 } pico_rnode_proto_command_encoder_t;
 
+/**
+ * Initialize a command encoder instance.
+ *
+ * Parameters:
+ * - encoder: encoder instance to initialize.
+ * - context: opaque user context passed to callbacks.
+ * - start_cb: callback invoked at frame start.
+ * - put_cb: callback invoked for each emitted byte.
+ * - end_cb: callback invoked at frame end.
+ *
+ * Returns:
+ * - None.
+ */
 void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_command_encoder_t *encoder,
     void * context,
@@ -57,50 +113,161 @@ void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_cmd_end_cb_t end_cb
 );
 
+/**
+ * Encode a set frequency command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - hz: frequency in Hertz.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_frequency(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     uint32_t hz
 );
 
+/**
+ * Encode a set bandwidth command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - bandwidth: bandwidth in Hertz.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     uint32_t bandwidth
 );
 
+/**
+ * Encode a set transmit power command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - dbm: transmit power in dBm.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     int8_t dbm
 );
 
+/**
+ * Encode a set spreading factor command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - sf: LoRa spreading factor.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
-    uint8_t sf // spreading factor, for LoRa radios (typically 6-12)
+    uint8_t sf
 );
 
+/**
+ * Encode a set coding rate command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - cr: LoRa coding rate.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
-    uint8_t cr // coding rate, for LoRa radios (typically 5-8)
+    uint8_t cr
 );
 
+/**
+ * Encode a set radio state command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - state: radio state value.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
-    pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
+    pico_rnode_proto_radio_state_t state
 );
 
+/**
+ * Encode a radio detect command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
     pico_rnode_proto_command_encoder_t *encoder
 );
 
+/**
+ * Encode a ready notification command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
     pico_rnode_proto_command_encoder_t *encoder
 );
 
+/**
+ * Encode a leave command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
 );
