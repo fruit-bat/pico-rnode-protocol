@@ -68,6 +68,11 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
     void * context
 );
 
+/**
+ * Frame context structure.
+ * 
+ * Pretent the contents are private...
+ */
 typedef struct {
     uint32_t byte_index; /**< Zero-based index of the next byte in the current frame. */
     pico_rnode_proto_cmd_start_cb_t start_cb;
@@ -75,6 +80,14 @@ typedef struct {
     pico_rnode_proto_cmd_end_cb_t end_cb;
 } pico_rnode_proto_frame_t;
 
+/**
+ * Initialize a frame context with the provided callbacks.
+ * Parameters:
+ * - frame: pointer to the frame context to initialize.
+ * - start_cb: callback invoked at the start of a new frame.
+ * - put_cb: callback invoked for each byte emitted into the frame.
+ * - end_cb: callback invoked at the end of the frame.
+ */
 void init_pico_rnode_proto_frame(
     pico_rnode_proto_frame_t *frame,
     pico_rnode_proto_cmd_start_cb_t start_cb,
@@ -82,17 +95,37 @@ void init_pico_rnode_proto_frame(
     pico_rnode_proto_cmd_end_cb_t end_cb
 );
 
+/**
+ * Start a new frame by invoking the start callback and resetting the byte index.
+ * Parameters:
+ * - frame: pointer to the frame context.
+ * - context: opaque user pointer passed to the callbacks.
+ * - interface: interface identifier for the new frame (encoded in the first byte).
+ */
 void pico_rnode_proto_frame_start(
     pico_rnode_proto_frame_t *frame,
     void *context
 );
 
+/**
+ * Emit a byte into the current frame by invoking the put callback and incrementing the byte index.
+ * Parameters:
+ * - frame: pointer to the frame context.
+ * - context: opaque user pointer passed to the callbacks.
+ * - byte: byte to emit into the current frame.
+ */
 void pico_rnode_proto_frame_put_byte(
     pico_rnode_proto_frame_t *frame,
     void *context,
     uint8_t byte
 );
 
+/**
+ * End the current frame by invoking the end callback.
+ * Parameters:
+ * - frame: pointer to the frame context.
+ * - context: opaque user pointer passed to the callbacks.
+ */
 void pico_rnode_proto_frame_end(
     pico_rnode_proto_frame_t *frame,
     void *context

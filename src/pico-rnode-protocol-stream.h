@@ -65,6 +65,8 @@ typedef void (*pico_rnode_proto_stream_end_cb_t)(
 
 /**
  * Stream context structure.
+ * 
+ * Pretent the contents are private...
  */
 typedef struct {
     uint32_t byte_index;
