@@ -218,34 +218,54 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
 );
 
+/**
+ * Encode the start of a transmit data frame. Subsequent data bytes should be sent
+ * using pico_rnode_proto_command_data(), and the frame should be finalized with
+ * pico_rnode_proto_command_end().
+ * 
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * 
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
+    pico_rnode_proto_command_encoder_t *encoder
+);
 
+/**
+ * Encode a single byte of payload data for the current transmit frame.
+ * 
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - byte: byte to include in the current transmit frame.
+ * 
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t byte
+);
 
-
-
-
-
-
-
-
-
-
-// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
-//     pico_rnode_proto_command_encoder_t *encoder,
-//     void *context
-// );
-
-// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
-//     pico_rnode_proto_command_encoder_t *encoder,
-//     void *context,
-//     uint8_t byte
-// );
-
-// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_end(
-//     pico_rnode_proto_command_encoder_t *encoder,
-//     void *context
-// );
-
-
+/**
+ * Encode the end of a transmit data frame.
+ * 
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * 
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_end(
+    pico_rnode_proto_command_encoder_t *encoder
+);
 
 #ifdef __cplusplus
 }

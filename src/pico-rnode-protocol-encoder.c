@@ -49,41 +49,37 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_send_header(
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
-    pico_rnode_proto_encoder_t *encoder,
-    void *context
+    pico_rnode_proto_encoder_t *encoder
 ) {
     // Check we are not currently transmitting another command
     if (encoder->state == PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
         return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING;
-    return translate_frame_cb_status(pico_rnode_proto_frame_start(&encoder->frame, context));
+    return translate_frame_cb_status(pico_rnode_proto_frame_start(&encoder->frame, encoder->context));
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_data(
     pico_rnode_proto_encoder_t *encoder,
-    void * context,
     uint8_t byte
 ) {
     // Check we are currently transmitting a command
     if (encoder->state != PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
         return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
-    return translate_frame_cb_status(pico_rnode_proto_frame_put_byte(&encoder->frame, context, byte));
+    return translate_frame_cb_status(pico_rnode_proto_frame_put_byte(&encoder->frame, encoder->context, byte));
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_end(
-    pico_rnode_proto_encoder_t *encoder,
-    void *context
+    pico_rnode_proto_encoder_t *encoder
 ) {
     // Check we are currently transmitting a command
     if (encoder->state != PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
         return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
-    return translate_frame_cb_status(pico_rnode_proto_frame_end(&encoder->frame, context));
+    return translate_frame_cb_status(pico_rnode_proto_frame_end(&encoder->frame, encoder->context));
 }
-
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_send_command_and_bytes(
     pico_rnode_proto_encoder_t *encoder,

@@ -92,3 +92,22 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
 ) {
     return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, 0, RNODE_OPCODE_LEAVE, 0);
 }
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
+    pico_rnode_proto_command_encoder_t *encoder
+) {
+    return pico_rnode_proto_encoder_start(&encoder->encoder);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t byte
+) {
+    return pico_rnode_proto_encoder_data(&encoder->encoder, byte);
+}
+
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_end(
+    pico_rnode_proto_command_encoder_t *encoder
+) {
+    return pico_rnode_proto_encoder_end(&encoder->encoder);
+}

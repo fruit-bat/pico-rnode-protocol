@@ -79,16 +79,13 @@ void pico_rnode_proto_encoder_init(
  *
  * Parameters:
  * - encoder: encoder instance handling output.
- * - context: opaque user pointer passed to the callback (may be the same as
- *            `encoder->context`).
  *
  * Returns:
  * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when the start callback succeeded.
  * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when the start callback requests abort.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
-    pico_rnode_proto_encoder_t *encoder,
-    void *context
+    pico_rnode_proto_encoder_t *encoder
 );
 
 /**
@@ -96,8 +93,6 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
  *
  * Parameters:
  * - encoder: encoder instance handling output.
- * - context: opaque user pointer passed to the callback (may be the same as
- *            `encoder->context`).
  * - byte: byte to emit.
  *
  * Returns:
@@ -106,7 +101,6 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_data(
     pico_rnode_proto_encoder_t *encoder,
-    void *context,
     uint8_t byte
 );
 
@@ -115,16 +109,13 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_data(
  *
  * Parameters:
  * - encoder: encoder instance handling output.
- * - context: opaque user pointer passed to the callback (may be the same as
- *            `encoder->context`).
  *
  * Returns:
  * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when the end callback succeeded.
  * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when the end callback requests abort.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_end(
-    pico_rnode_proto_encoder_t *encoder,
-    void *context
+    pico_rnode_proto_encoder_t *encoder
 );
 
 /**
