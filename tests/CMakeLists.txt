@@ -10,6 +10,9 @@ add_executable(host_tests
   test_command_decoder.c
   test_command_encoder.c
   test_command_round_trip.c
+  test_event_decoder.c
+  test_event_encoder.c
+  test_event_round_trip.c
   test_main.c
   test_utils.c
   ../src/pico-rnode-protocol-command-decoder.c
