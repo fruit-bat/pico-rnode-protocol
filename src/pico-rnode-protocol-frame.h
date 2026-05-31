@@ -75,20 +75,24 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
  */
 typedef struct {
     uint32_t byte_index; /**< Zero-based index of the next byte in the current frame. */
-    pico_rnode_proto_cmd_start_cb_t start_cb;
-    pico_rnode_proto_cmd_put_cb_t put_cb;
-    pico_rnode_proto_cmd_end_cb_t end_cb;
+    pico_rnode_proto_cmd_start_cb_t start_cb; /**< Callback invoked at the start of a new frame. */
+    pico_rnode_proto_cmd_put_cb_t put_cb;     /**< Callback invoked for each emitted byte. */
+    pico_rnode_proto_cmd_end_cb_t end_cb;     /**< Callback invoked at the end of the frame. */
 } pico_rnode_proto_frame_t;
 
 /**
  * Initialize a frame context with the provided callbacks.
+ *
  * Parameters:
  * - frame: pointer to the frame context to initialize.
  * - start_cb: callback invoked at the start of a new frame.
  * - put_cb: callback invoked for each byte emitted into the frame.
  * - end_cb: callback invoked at the end of the frame.
+ *
+ * Returns:
+ * - None.
  */
-void init_pico_rnode_proto_frame(
+void pico_rnode_proto_frame_init(
     pico_rnode_proto_frame_t *frame,
     pico_rnode_proto_cmd_start_cb_t start_cb,
     pico_rnode_proto_cmd_put_cb_t put_cb,
@@ -96,25 +100,34 @@ void init_pico_rnode_proto_frame(
 );
 
 /**
- * Start a new frame by invoking the start callback and resetting the byte index.
+ * Start a new frame by resetting the byte index and invoking the start callback.
+ *
  * Parameters:
  * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callbacks.
- * - interface: interface identifier for the new frame (encoded in the first byte).
+ * - context: opaque user pointer passed to the callback.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame start succeeded.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the start callback requests abort.
  */
-void pico_rnode_proto_frame_start(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_start(
     pico_rnode_proto_frame_t *frame,
     void *context
 );
 
 /**
- * Emit a byte into the current frame by invoking the put callback and incrementing the byte index.
+ * Emit a byte into the current frame and advance the byte index.
+ *
  * Parameters:
  * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callbacks.
+ * - context: opaque user pointer passed to the callback.
  * - byte: byte to emit into the current frame.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the byte was accepted.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the put callback requests abort.
  */
-void pico_rnode_proto_frame_put_byte(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_put_byte(
     pico_rnode_proto_frame_t *frame,
     void *context,
     uint8_t byte
@@ -122,11 +135,16 @@ void pico_rnode_proto_frame_put_byte(
 
 /**
  * End the current frame by invoking the end callback.
+ *
  * Parameters:
  * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callbacks.
+ * - context: opaque user pointer passed to the callback.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame end succeeded.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the end callback requests abort.
  */
-void pico_rnode_proto_frame_end(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_end(
     pico_rnode_proto_frame_t *frame,
     void *context
 );

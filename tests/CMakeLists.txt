@@ -15,7 +15,7 @@ add_executable(host_tests
   ../src/pico-rnode-protocol-command-decoder.c
   ../src/pico-rnode-protocol-command-encoder.c
   ../src/pico-rnode-protocol-stream.c
-  ../src/pico-rnode-protocol-command-encoder.c
+  ../src/pico-rnode-protocol-frame.c
 )
 
 target_include_directories(host_tests PRIVATE

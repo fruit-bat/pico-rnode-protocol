@@ -65,23 +65,28 @@ typedef pico_rnode_proto_stream_cb_status_t (*pico_rnode_proto_stream_end_cb_t)(
 
 /**
  * Stream context structure.
- * 
- * Pretent the contents are private...
+ *
+ * This struct tracks the current stream byte index and the callbacks required
+ * to process transmit/receive frame data.
  */
 typedef struct {
-    uint32_t byte_index;
-    pico_rnode_proto_stream_start_cb_t start_cb;
-    pico_rnode_proto_stream_data_cb_t data_cb;
-    pico_rnode_proto_stream_end_cb_t end_cb;
+    uint32_t byte_index; /**< Zero-based index of the next byte in the current frame. */
+    pico_rnode_proto_stream_start_cb_t start_cb; /**< Callback invoked at the start of a new stream frame. */
+    pico_rnode_proto_stream_data_cb_t data_cb;   /**< Callback invoked for each byte in the stream frame. */
+    pico_rnode_proto_stream_end_cb_t end_cb;     /**< Callback invoked when a stream frame ends. */
 } pico_rnode_proto_stream_t;
 
 /**
  * Initialize a stream instance with the provided callbacks.
+ *
  * Parameters:
  * - stream: pointer to the stream instance to initialize.
  * - start_cb: callback invoked at the start of a new stream frame.
- * - data_cb: callback invoked for each byte in the stream frame.   
+ * - data_cb: callback invoked for each byte in the stream frame.
  * - end_cb: callback invoked when a stream frame ends.
+ *
+ * Returns:
+ * - None.
  */
 void pico_rnode_proto_stream_init(
     pico_rnode_proto_stream_t *stream,
@@ -92,10 +97,15 @@ void pico_rnode_proto_stream_init(
 
 /**
  * Notify the stream that a new frame has started.
+ *
  * Parameters:
  * - stream: pointer to the stream instance.
  * - context: opaque user pointer passed to the callbacks.
  * - interface: interface identifier for the new stream frame.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_OK if the frame start succeeded.
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_ABORT if the start callback requests abort.
  */
 pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_start(
     pico_rnode_proto_stream_t *stream,
@@ -105,11 +115,16 @@ pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_start(
 
 /**
  * Notify the stream of a new byte in the current frame.
+ *
  * Parameters:
  * - stream: pointer to the stream instance.
  * - context: opaque user pointer passed to the callbacks.
  * - interface: interface identifier for the current stream frame.
  * - byte: next byte in the current stream frame.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_OK if the byte was accepted.
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_ABORT if the data callback requests abort.
  */
 pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_data(
     pico_rnode_proto_stream_t *stream,
@@ -120,10 +135,15 @@ pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_data(
 
 /**
  * Notify the stream that the current frame has ended.
+ *
  * Parameters:
  * - stream: pointer to the stream instance.
  * - context: opaque user pointer passed to the callbacks.
  * - interface: interface identifier for the completed stream frame.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_OK if the stream end succeeded.
+ * - PICO_RNODE_PROTO_STREAM_CB_STATUS_ABORT if the end callback requests abort.
  */
 pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_end(
     pico_rnode_proto_stream_t *stream,

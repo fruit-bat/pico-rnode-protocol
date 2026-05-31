@@ -1,7 +1,7 @@
 
 #include "pico-rnode-protocol-frame.h"
 
-void init_pico_rnode_proto_frame(
+void pico_rnode_proto_frame_init(
     pico_rnode_proto_frame_t *frame,
     pico_rnode_proto_cmd_start_cb_t start_cb,
     pico_rnode_proto_cmd_put_cb_t put_cb,
@@ -13,33 +13,38 @@ void init_pico_rnode_proto_frame(
     frame->end_cb = end_cb;
 }
 
-void pico_rnode_proto_frame_start(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_start(
     pico_rnode_proto_frame_t *frame,
     void *context
 ) {
+    pico_rnode_proto_frame_cb_status_t status = PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
     frame->byte_index = 0;
     if (frame->start_cb) {
-        frame->start_cb(context);
+        status = frame->start_cb(context);
     }
+    return status;
 }
 
-void pico_rnode_proto_frame_put_byte(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_put_byte(
     pico_rnode_proto_frame_t *frame,
     void *context,
     uint8_t byte
 ) {
+    pico_rnode_proto_frame_cb_status_t status = PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
     if (frame->put_cb) {
-        frame->put_cb(context, byte);
+        status = frame->put_cb(context, byte);
     }
     frame->byte_index++;
+    return status;
 }
 
-void pico_rnode_proto_frame_end(
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_end(
     pico_rnode_proto_frame_t *frame,
     void *context
 ) {
+    pico_rnode_proto_frame_cb_status_t status = PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
     if (frame->end_cb) {
-        frame->end_cb(context);
+        status = frame->end_cb(context);
     }
+    return status;
 }
-
