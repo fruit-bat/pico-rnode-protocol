@@ -1,8 +1,7 @@
 add_library(pico_rnode_protocol INTERFACE)
 
 target_sources(pico_rnode_protocol INTERFACE
-  ${CMAKE_CURRENT_LIST_DIR}/src/pico-rnode-protocol-encoder.c
-  ${CMAKE_CURRENT_LIST_DIR}/src/pico-rnode-protocol-decoder.c
+  ${CMAKE_CURRENT_LIST_DIR}/src/**.c
 )
 
 target_include_directories(pico_rnode_protocol INTERFACE

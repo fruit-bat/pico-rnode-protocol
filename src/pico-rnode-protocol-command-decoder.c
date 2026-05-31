@@ -20,9 +20,9 @@ void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_ready_cb_t ready_cb,
     pico_rnode_proto_command_lock_cb_t lock_cb,
     pico_rnode_proto_command_leave_cb_t leave_cb,
-    pico_rnode_proto_data_decoder_start_cb_t tx_start_cb,
-    pico_rnode_proto_data_decoder_data_cb_t tx_data_cb,
-    pico_rnode_proto_data_decoder_end_cb_t tx_end_cb,
+    pico_rnode_proto_stream_start_cb_t tx_start_cb,
+    pico_rnode_proto_stream_data_cb_t tx_data_cb,
+    pico_rnode_proto_stream_end_cb_t tx_end_cb,
     pico_rnode_proto_decoder_error_cb_t error_cb
 ) {
     decoder->context = context;
@@ -41,9 +41,7 @@ void pico_rnode_proto_command_decoder_init(
     decoder->lock_cb = lock_cb;
     decoder->leave_cb = leave_cb;
 
-    decoder->tx_start_cb = tx_start_cb;
-    decoder->tx_data_cb = tx_data_cb;
-    decoder->tx_end_cb = tx_end_cb;
+    pico_rnode_proto_stream_init(&decoder->tx_stream, tx_start_cb, tx_data_cb, tx_end_cb);
     decoder->error_cb = error_cb;
 }
 
@@ -295,9 +293,11 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
                     return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE;
                 case -1:
                     decoder->state = PICO_RNODE_PROTO_DECODER_STATE_STREAM_DATA;
-                    if (decoder->tx_start_cb) {
-                        decoder->tx_start_cb(decoder->context, decoder->interface);
-                    }
+                    pico_rnode_proto_stream_start(
+                        &decoder->tx_stream,
+                        decoder->context,
+                        decoder->interface
+                    );
                     break;
                 default:
                     decoder->opcode_length = (uint8_t)opcode_length;
@@ -328,26 +328,24 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
             break;
         }
         case PICO_RNODE_PROTO_DECODER_STATE_STREAM_DATA: {
-            if (decoder->tx_data_cb) {
-                pico_rnode_proto_frame_cb_status_t cb_status = decoder->tx_data_cb(
-                    decoder->context,
-                    decoder->interface,
-                    byte,
-                    decoder->payload_index
-                );
-                if (cb_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
-                    decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
-                    if (decoder->error_cb) {
-                        decoder->error_cb(
-                            decoder->context, 
-                            decoder->interface,
-                            decoder->opcode,
-                            decoder->payload_index,
-                            PICO_RNODE_PROTO_DECODER_STATUS_ABORTED
-                        );
-                    }
-                    return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
+            pico_rnode_proto_stream_cb_status_t cb_status = pico_rnode_proto_stream_data(
+                &decoder->tx_stream,
+                decoder->context,
+                decoder->interface,
+                byte
+            );
+            if (cb_status != PICO_RNODE_PROTO_STREAM_CB_STATUS_OK) {
+                decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
+                if (decoder->error_cb) {
+                    decoder->error_cb(
+                        decoder->context, 
+                        decoder->interface,
+                        decoder->opcode,
+                        decoder->payload_index,
+                        PICO_RNODE_PROTO_DECODER_STATUS_ABORTED
+                    );
                 }
+                return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
             }
             decoder->payload_index++;
             break;
@@ -406,12 +404,23 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
             break;
         }
         case PICO_RNODE_PROTO_DECODER_STATE_STREAM_DATA: {
-            if (decoder->tx_end_cb) {
-                decoder->tx_end_cb(
-                    decoder->context,
-                    decoder->interface,
-                    decoder->payload_index
-                );
+            pico_rnode_proto_stream_cb_status_t cb_status = pico_rnode_proto_stream_end(
+                &decoder->tx_stream,
+                decoder->context,
+                decoder->interface
+            );
+            if (cb_status != PICO_RNODE_PROTO_STREAM_CB_STATUS_OK) {
+                decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
+                if (decoder->error_cb) {
+                    decoder->error_cb(
+                        decoder->context, 
+                        decoder->interface,
+                        decoder->opcode,
+                        decoder->payload_index,
+                        PICO_RNODE_PROTO_DECODER_STATUS_ABORTED
+                    );
+                }
+                return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
             }
             break;
         }

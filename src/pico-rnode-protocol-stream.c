@@ -12,36 +12,41 @@ void pico_rnode_proto_stream_init(
     stream->end_cb = end_cb;
 }
 
-void pico_rnode_proto_stream_start(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_start(
     pico_rnode_proto_stream_t *stream,
     void *context,
     uint8_t interface
 ) {
+    pico_rnode_proto_stream_cb_status_t status = PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
     stream->byte_index = 0;
     if (stream->start_cb) {
-        stream->start_cb(context, interface);
+        status = stream->start_cb(context, interface);
     }
+    return status;
 }
 
-void pico_rnode_proto_stream_put_byte(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_data(
     pico_rnode_proto_stream_t *stream,
     void * context,
     uint8_t interface,
     uint8_t byte
 ) {
+    pico_rnode_proto_stream_cb_status_t status = PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
     if (stream->data_cb) {
-        stream->data_cb(context, interface, byte, stream->byte_index);
+        status = stream->data_cb(context, interface, byte, stream->byte_index);
     }
     stream->byte_index++;
+    return status;
 }
 
-void pico_rnode_proto_stream_end(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_end(
     pico_rnode_proto_stream_t *stream,
     void *context,
     uint8_t interface
 ) {
+    pico_rnode_proto_stream_cb_status_t status = PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
     if (stream->end_cb) {
-        stream->end_cb(context, interface, stream->byte_index);
+        status = stream->end_cb(context, interface, stream->byte_index);
     }
+    return status;
 }
-

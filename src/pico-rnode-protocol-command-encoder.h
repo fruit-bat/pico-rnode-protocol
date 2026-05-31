@@ -9,9 +9,10 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include "pico-rnode-protocol-consts.h"
+#include "pico-rnode-protocol-frame.h"
 
 // -----------------------------------------------------------
-// Encoder for outgoing protocol commands.
+// Encoder for outgoing protocol commands (e.g. from host to radio).
 // -----------------------------------------------------------
 
 /**
@@ -25,50 +26,6 @@ typedef enum {
     PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED,   /**< Encoding aborted by callback or internal error. */
     PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR, /**< A frame is already open when a new command was requested. */
 } pico_rnode_proto_encoder_status_t;
-
-/**
- * Callback invoked to begin a new command frame.
- *
- * Parameters:
- * - context: user-provided opaque context pointer.
- *
- * Return:
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to continue encoding.
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the command.
- */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_start_cb_t)(
-    void * context
-);
-
-/**
- * Callback invoked to emit a single command byte.
- *
- * Parameters:
- * - context: user-provided opaque context pointer.
- * - byte: byte to emit into the current frame.
- *
- * Return:
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to continue encoding.
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the command.
- */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_put_cb_t)(
-    void * context,
-    uint8_t byte
-);
-
-/**
- * Callback invoked to end the current command frame.
- *
- * Parameters:
- * - context: user-provided opaque context pointer.
- *
- * Return:
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to finalize the frame.
- * - PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the frame.
- */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
-    void * context
-);
 
 /**
  * Encoder state machine state values.

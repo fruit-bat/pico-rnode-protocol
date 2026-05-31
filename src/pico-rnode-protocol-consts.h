@@ -13,11 +13,6 @@ typedef enum {
 } pico_rnode_proto_radio_state_t;
 
 typedef enum {
-    PICO_RNODE_PROTO_FRAME_CB_STATUS_OK = 0,
-    PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT = 1,
-} pico_rnode_proto_frame_cb_status_t;
-
-typedef enum {
     RNODE_DETECT_REQ = 0x73,
     RNODE_DETECT_RESP = 0x46
 } pico_rnode_proto_detect_constants_t;

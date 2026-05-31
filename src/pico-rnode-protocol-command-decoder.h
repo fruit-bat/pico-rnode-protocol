@@ -9,6 +9,7 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include "pico-rnode-protocol-consts.h"
+#include "pico-rnode-protocol-stream.h"
 
 /*
  * Each KISS frame contains exactly one RNode command/event.
@@ -34,55 +35,8 @@ typedef enum {
 } pico_rnode_proto_decoder_status_t;
 
 // -----------------------------------------------------------
-// Decoder for incoming protocol commands.
+// Decoder for incoming protocol commands (e.g. from radio to host).
 // -----------------------------------------------------------
-
-/**
- * Callback invoked for each transmit/receive byte.
- *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the current frame.
- * - byte: next byte in the current frame.
- * - byte_index: zero-based index within the current transmit/receive frame.
- *
- * Return PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_OK to continue decoding, or
- * PICO_RNODE_PROTO_DATA_DECODER_CB_STATUS_ERROR to abort the current frame.
- */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_data_decoder_data_cb_t)(
-    void * context,
-    uint8_t interface,
-    uint8_t byte,
-    uint32_t byte_index
-);
-
-/**
- * Callback invoked when a new transmit frame begins.
- *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the new transmit frame.
- *
- * The decoder calls this immediately after parsing a transmit start command.
- */
-typedef void (*pico_rnode_proto_data_decoder_start_cb_t)(
-    void * context,
-    uint8_t interface
-);
-
-/**
- * Callback invoked when a transmit/receive frame ends.
- *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the completed frame.
- * - length: number of payload bytes contained in the completed frame.
- */
-typedef void (*pico_rnode_proto_data_decoder_end_cb_t)(
-    void * context,
-    uint8_t interface,
-    uint32_t length
-);
 
 /**
  * Callback invoked when a decoder error occurs.
@@ -281,9 +235,7 @@ typedef struct {
     pico_rnode_proto_command_leave_cb_t leave_cb;
 
     /** Transmit frame callbacks invoked for each in-flight data frame. */
-    pico_rnode_proto_data_decoder_start_cb_t tx_start_cb;
-    pico_rnode_proto_data_decoder_data_cb_t tx_data_cb;
-    pico_rnode_proto_data_decoder_end_cb_t tx_end_cb;
+    pico_rnode_proto_stream_t tx_stream;
 
     /** Error callback invoked when decoding fails. */
     pico_rnode_proto_decoder_error_cb_t error_cb;
@@ -330,9 +282,9 @@ void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_ready_cb_t ready_cb,
     pico_rnode_proto_command_lock_cb_t lock_cb,
     pico_rnode_proto_command_leave_cb_t leave_cb,
-    pico_rnode_proto_data_decoder_start_cb_t tx_start_cb,
-    pico_rnode_proto_data_decoder_data_cb_t tx_data_cb,
-    pico_rnode_proto_data_decoder_end_cb_t tx_end_cb,
+    pico_rnode_proto_stream_start_cb_t tx_start_cb,
+    pico_rnode_proto_stream_data_cb_t tx_data_cb,
+    pico_rnode_proto_stream_end_cb_t tx_end_cb,
     pico_rnode_proto_decoder_error_cb_t error_cb
 );
 

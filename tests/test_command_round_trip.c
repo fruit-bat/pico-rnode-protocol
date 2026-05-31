@@ -162,15 +162,16 @@ static void roundtrip_decoder_leave_cb(void *context) {
     state->leave_count++;
 }
 
-static void roundtrip_decoder_tx_start_cb(
+static pico_rnode_proto_stream_cb_status_t roundtrip_decoder_tx_start_cb(
     void *context,
     uint8_t interface
 ) {
     (void)context;
     (void)interface;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
-static pico_rnode_proto_frame_cb_status_t roundtrip_decoder_tx_data_cb(
+static pico_rnode_proto_stream_cb_status_t roundtrip_decoder_tx_data_cb(
     void *context,
     uint8_t interface,
     uint8_t byte,
@@ -180,10 +181,10 @@ static pico_rnode_proto_frame_cb_status_t roundtrip_decoder_tx_data_cb(
     (void)interface;
     (void)byte;
     (void)byte_index;
-    return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
-static void roundtrip_decoder_tx_end_cb(
+static pico_rnode_proto_stream_cb_status_t roundtrip_decoder_tx_end_cb(
     void *context,
     uint8_t interface,
     uint32_t len
@@ -191,6 +192,7 @@ static void roundtrip_decoder_tx_end_cb(
     (void)context;
     (void)interface;
     (void)len;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
 static void init_roundtrip_decoder(

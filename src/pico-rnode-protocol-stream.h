@@ -25,7 +25,7 @@ typedef enum {
  *
  * The decoder calls this immediately after parsing a transmit start command.
  */
-typedef void (*pico_rnode_proto_stream_start_cb_t)(
+typedef pico_rnode_proto_stream_cb_status_t (*pico_rnode_proto_stream_start_cb_t)(
     void * context,
     uint8_t interface
 );
@@ -57,7 +57,7 @@ typedef pico_rnode_proto_stream_cb_status_t (*pico_rnode_proto_stream_data_cb_t)
  * - interface: interface identifier for the completed frame.
  * - length: number of payload bytes contained in the completed frame.
  */
-typedef void (*pico_rnode_proto_stream_end_cb_t)(
+typedef pico_rnode_proto_stream_cb_status_t (*pico_rnode_proto_stream_end_cb_t)(
     void * context,
     uint8_t interface,
     uint32_t length
@@ -97,7 +97,7 @@ void pico_rnode_proto_stream_init(
  * - context: opaque user pointer passed to the callbacks.
  * - interface: interface identifier for the new stream frame.
  */
-void pico_rnode_proto_stream_start(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_start(
     pico_rnode_proto_stream_t *stream,
     void *context,
     uint8_t interface
@@ -111,7 +111,7 @@ void pico_rnode_proto_stream_start(
  * - interface: interface identifier for the current stream frame.
  * - byte: next byte in the current stream frame.
  */
-void pico_rnode_proto_stream_put_byte(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_data(
     pico_rnode_proto_stream_t *stream,
     void * context,
     uint8_t interface,
@@ -125,7 +125,7 @@ void pico_rnode_proto_stream_put_byte(
  * - context: opaque user pointer passed to the callbacks.
  * - interface: interface identifier for the completed stream frame.
  */
-void pico_rnode_proto_stream_end(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_stream_end(
     pico_rnode_proto_stream_t *stream,
     void *context,
     uint8_t interface

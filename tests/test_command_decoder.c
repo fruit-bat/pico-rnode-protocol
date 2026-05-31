@@ -157,7 +157,7 @@ void pico_rnode_proto_command_lock_cb_test(
     lock_cb_count++;
 }
 
-void pico_rnode_proto_command_tx_start_cb_test(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_command_tx_start_cb_test(
     void * context,
     uint8_t interface
 ) {
@@ -165,9 +165,10 @@ void pico_rnode_proto_command_tx_start_cb_test(
     assert(interface == 1);
     tx_start_cb_count++;
     last_callback_context = context;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_tx_data_cb_test(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_command_tx_data_cb_test(
     void * context,
     uint8_t interface,
     uint8_t byte,
@@ -177,18 +178,18 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_tx_data_cb_test(
     assert(interface == 1);
     if (byte == '#') {
         fprintf(stderr, "Simulating error condition on byte '#'\n");
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+        return PICO_RNODE_PROTO_STREAM_CB_STATUS_ABORT;
     }
     if (byte_index >= sizeof(data)) {
         fprintf(stderr, "Error: byte_index %u out of bounds\n", byte_index);
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+        return PICO_RNODE_PROTO_STREAM_CB_STATUS_ABORT;
     }
     data[byte_index] = byte;
     tx_data_cb_count++;
-    return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
-void pico_rnode_proto_command_tx_end_cb_test(
+pico_rnode_proto_stream_cb_status_t pico_rnode_proto_command_tx_end_cb_test(
     void * context,
     uint8_t interface,
     uint32_t len
@@ -197,6 +198,7 @@ void pico_rnode_proto_command_tx_end_cb_test(
     assert(interface == 1);
     tx_end_cb_count++;
     last_callback_context = context;
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
 void pico_rnode_proto_command_set_bandwidth_cb_test(
