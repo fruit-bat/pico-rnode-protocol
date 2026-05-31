@@ -19,6 +19,20 @@ void pico_rnode_proto_encoder_init(
     pico_rnode_proto_frame_init(&encoder->frame, start_cb, put_cb, end_cb);
 }
 
+// Status translation helper for command encoder functions
+static pico_rnode_proto_encoder_status_t translate_frame_cb_status(
+    pico_rnode_proto_frame_cb_status_t frame_status
+) {
+    switch (frame_status) {
+        case PICO_RNODE_PROTO_FRAME_CB_STATUS_OK:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
+        case PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED;
+        default:
+            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED; // Treat unknown status as abort
+    }
+}
+
 pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_send_byte(
     pico_rnode_proto_encoder_t *encoder,
     uint8_t byte
@@ -34,55 +48,42 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_send_header(
     return pico_rnode_proto_encoder_send_byte(encoder, (interface << 4) | (opcode & 0x0F));
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_start(
+pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
     pico_rnode_proto_encoder_t *encoder,
     void *context
 ) {
     // Check we are not currently transmitting another command
     if (encoder->state == PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+        return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING;
-    return pico_rnode_proto_frame_start(&encoder->frame, context);
+    return translate_frame_cb_status(pico_rnode_proto_frame_start(&encoder->frame, context));
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_data(
+pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_data(
     pico_rnode_proto_encoder_t *encoder,
     void * context,
     uint8_t byte
 ) {
     // Check we are currently transmitting a command
     if (encoder->state != PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+        return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
-    return pico_rnode_proto_frame_put_byte(&encoder->frame, context, byte);
+    return translate_frame_cb_status(pico_rnode_proto_frame_put_byte(&encoder->frame, context, byte));
 }
 
-pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_end(
+pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_end(
     pico_rnode_proto_encoder_t *encoder,
     void *context
 ) {
     // Check we are currently transmitting a command
     if (encoder->state != PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
+        return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
-    return pico_rnode_proto_frame_end(&encoder->frame, context);
+    return translate_frame_cb_status(pico_rnode_proto_frame_end(&encoder->frame, context));
 }
 
-// Status translation helper for command encoder functions
-static pico_rnode_proto_encoder_status_t translate_frame_cb_status(
-    pico_rnode_proto_frame_cb_status_t frame_status
-) {
-    switch (frame_status) {
-        case PICO_RNODE_PROTO_FRAME_CB_STATUS_OK:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
-        case PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED;
-        default:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED; // Treat unknown status as abort
-    }
-}
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_send_command_and_bytes(
     pico_rnode_proto_encoder_t *encoder,

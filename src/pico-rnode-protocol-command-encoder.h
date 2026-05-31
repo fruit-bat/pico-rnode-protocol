@@ -27,6 +27,7 @@ extern "C" {
  *
  * This struct wraps a protocol encoder to provide command-specific encoding
  * functions. The protocol encoder handles all frame start/byte/end operations.
+ * 
  */
 typedef struct {
     /**
@@ -216,6 +217,35 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
 );
+
+
+
+
+
+
+
+
+
+
+
+
+// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
+//     pico_rnode_proto_command_encoder_t *encoder,
+//     void *context
+// );
+
+// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
+//     pico_rnode_proto_command_encoder_t *encoder,
+//     void *context,
+//     uint8_t byte
+// );
+
+// pico_rnode_proto_encoder_status_t pico_rnode_proto_command_end(
+//     pico_rnode_proto_command_encoder_t *encoder,
+//     void *context
+// );
+
+
 
 #ifdef __cplusplus
 }

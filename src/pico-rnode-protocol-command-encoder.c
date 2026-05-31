@@ -18,77 +18,12 @@ void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_encoder_init(&encoder->encoder, context, start_cb, put_cb, end_cb);
 }
 
-static inline pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
-    pico_rnode_proto_command_encoder_t *encoder,
-    uint8_t byte
-) {
-    return pico_rnode_proto_encoder_send_byte(&encoder->encoder, byte);
-}
-
-static inline pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
-    pico_rnode_proto_command_encoder_t *encoder,
-    uint8_t interface,
-    rnode_opcode_t opcode
-) {
-    return pico_rnode_proto_encoder_send_header(&encoder->encoder, interface, opcode);
-}
-
-// Status translation helper for command encoder functions
-static inline pico_rnode_proto_encoder_status_t translate_encoder_status(
-    pico_rnode_proto_frame_cb_status_t frame_status
-) {
-    switch (frame_status) {
-        case PICO_RNODE_PROTO_FRAME_CB_STATUS_OK:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
-        case PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED;
-        default:
-            return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED;
-    }
-}
-
-static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_bytes(
-    pico_rnode_proto_command_encoder_t *encoder,
-    uint8_t interface,
-    rnode_opcode_t opcode,
-    uint8_t* bytes,
-    size_t len // 0-4
-) {
-    // Delegate to the protocol encoder
-    pico_rnode_proto_encoder_status_t status = pico_rnode_proto_encoder_send_command_and_bytes(
-        &encoder->encoder,
-        interface,
-        opcode,
-        bytes,
-        len
-    );
-    return status;
-}
-
-static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_word(
-    pico_rnode_proto_command_encoder_t *encoder,
-    uint8_t interface,
-    rnode_opcode_t opcode,
-    uint32_t word
-) {
-    return pico_rnode_proto_encoder_send_command_and_word(&encoder->encoder, interface, opcode, word);
-}
-
-static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_byte(
-    pico_rnode_proto_command_encoder_t *encoder,
-    uint8_t interface,
-    rnode_opcode_t opcode,
-    uint8_t value
-) {
-    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, opcode, value);
-}
-
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_frequency(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     uint32_t hz
 ) {
-    return pico_rnode_proto_command_send_command_and_word(encoder, interface, RNODE_OPCODE_FREQUENCY, hz);
+    return pico_rnode_proto_encoder_send_command_and_word(&encoder->encoder, interface, RNODE_OPCODE_FREQUENCY, hz);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
@@ -96,7 +31,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
     uint8_t interface,
     uint32_t bandwidth
 ) {
-    return pico_rnode_proto_command_send_command_and_word(encoder, interface, RNODE_OPCODE_BANDWIDTH, bandwidth);
+    return pico_rnode_proto_encoder_send_command_and_word(&encoder->encoder, interface, RNODE_OPCODE_BANDWIDTH, bandwidth);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
@@ -104,7 +39,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
     uint8_t interface,
     int8_t dbm
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_TXPOWER, (uint8_t)dbm);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_TXPOWER, (uint8_t)dbm);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
@@ -112,7 +47,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
     uint8_t interface,
     uint8_t sf // spreading factor, for LoRa radios (typically 6-12)
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_SF, sf);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_SF, sf);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
@@ -120,7 +55,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
     uint8_t interface,
     uint8_t cr // coding rate, for LoRa radios (typically 5-8)
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_CR, cr);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_CR, cr);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
@@ -128,7 +63,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
     uint8_t interface,
     pico_rnode_proto_radio_state_t state // radio state, for LoRa radios (typically 0-2)
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, interface, RNODE_OPCODE_RADIO_STATE, (uint8_t)state);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_RADIO_STATE, (uint8_t)state);
 }
 
 /**
@@ -137,7 +72,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
     pico_rnode_proto_command_encoder_t *encoder
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, 0, RNODE_OPCODE_DETECT, RNODE_DETECT_REQ);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, 0, RNODE_OPCODE_DETECT, RNODE_DETECT_REQ);
 }
 
 /**
@@ -146,7 +81,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
     pico_rnode_proto_command_encoder_t *encoder
 ) {
-    return pico_rnode_proto_command_send_command_and_bytes(encoder, 0, RNODE_OPCODE_READY, NULL, 0);
+    return pico_rnode_proto_encoder_send_command_and_bytes(&encoder->encoder, 0, RNODE_OPCODE_READY, NULL, 0);
 }
 
 /**
@@ -155,5 +90,5 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
 ) {
-    return pico_rnode_proto_command_send_command_and_byte(encoder, 0, RNODE_OPCODE_LEAVE, 0);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, 0, RNODE_OPCODE_LEAVE, 0);
 }
