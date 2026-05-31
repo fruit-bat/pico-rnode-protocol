@@ -17,21 +17,14 @@ void pico_rnode_proto_command_encoder_init(
 ) {
     encoder->context = context;
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
-    encoder->start_cb = start_cb;
-    encoder->put_cb = put_cb;
-    encoder->end_cb = end_cb;
+    pico_rnode_proto_frame_init(&encoder->frame, start_cb, put_cb, end_cb);
 }
 
 static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t byte
 ) {
-    if (encoder->put_cb) {
-        return encoder->put_cb(encoder->context, byte);
-    }
-    else {
-        return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT;
-    }
+    return pico_rnode_proto_frame_put_byte(&encoder->frame, encoder->context, byte);
 }
 
 static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
@@ -69,31 +62,34 @@ static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_a
     }
 
     // Start the transmission frame
-    pico_rnode_proto_encoder_status_t status = encoder->start_cb(encoder->context);
-
-    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
-        return translate_frame_cb_status(status);
+    pico_rnode_proto_frame_cb_status_t frame_status = pico_rnode_proto_frame_start(&encoder->frame, encoder->context);
+    if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(frame_status);
     }
 
-    // Send the header
-    status = pico_rnode_proto_command_send_header(encoder, interface, opcode);
+    encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING;
 
-    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
-        return translate_frame_cb_status(status);
+    // Send the header
+    frame_status = pico_rnode_proto_command_send_header(encoder, interface, opcode);
+    if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
+        return translate_frame_cb_status(frame_status);
     }
 
     // Send the payload
     for (size_t i = 0; i < len; i++) {
-        status = pico_rnode_proto_command_send_byte(encoder, bytes[i]);
-        if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
-            return translate_frame_cb_status(status);
+        frame_status = pico_rnode_proto_command_send_byte(encoder, bytes[i]);
+        if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+            encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
+            return translate_frame_cb_status(frame_status);
         }
     }
 
     // End the transmission frame
-    status = encoder->end_cb(encoder->context);
-    if (status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
-        return translate_frame_cb_status(status);
+    frame_status = pico_rnode_proto_frame_end(&encoder->frame, encoder->context);
+    encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
+    if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(frame_status);
     }
 
     return PICO_RNODE_PROTO_ENCODER_STATUS_OK;

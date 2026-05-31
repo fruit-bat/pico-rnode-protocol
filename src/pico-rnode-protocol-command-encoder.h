@@ -44,9 +44,13 @@ typedef enum {
 typedef struct {
     void * context;                         /**< User-provided callback context. */
     pico_rnode_proto_encoder_state_t state; /**< Current encoder state. */
-    pico_rnode_proto_cmd_start_cb_t start_cb; /**< Begin a command frame. */
-    pico_rnode_proto_cmd_put_cb_t put_cb;     /**< Emit a command byte. */
-    pico_rnode_proto_cmd_end_cb_t end_cb;     /**< End the command frame. */
+    /**
+     * Frame helper used to emit a complete command frame.
+     *
+     * The encoder delegates frame start/byte/end operations to this helper
+     * which wraps the user-provided callbacks.
+     */
+    pico_rnode_proto_frame_t frame;
 } pico_rnode_proto_command_encoder_t;
 
 /**
