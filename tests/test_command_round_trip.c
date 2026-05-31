@@ -407,6 +407,41 @@ static void test_round_trip_leave(void) {
     assert(rt_state.error_count == 0);
 }
 
+static void test_round_trip_transmit(void) {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_command_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 1;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    uint8_t payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+    assert(pico_rnode_proto_command_start(&encoder, 1) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    for (size_t i = 0; i < sizeof(payload); i++) {
+        assert(pico_rnode_proto_command_data(&encoder, payload[i]) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    }
+    assert(pico_rnode_proto_command_end(&encoder) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 5);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.error_count == 0);
+
+    // The expected frame for the transmit command on interface 1 with payload 0xDEADBEEF is:
+    // Byte 0: 0x10 (Interface 1, opcode 0 - DATA)
+    // Byte 1-4: 0xDEADBEEF (payload data)
+    const uint8_t frame[] = { 
+        0x10, // Interface 1, opcode 0 (DATA - RNODE_OPCODE_DATA)
+        0xDE, // Payload byte 0
+        0xAD, // Payload byte 1
+        0xBE, // Payload byte 2
+        0xEF, // Payload byte 3
+    };
+
+    assert_equal_bytes(frame, rt_buffer, sizeof(frame));
+}
+
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
     reset_roundtrip_state();
@@ -424,6 +459,7 @@ void test_command_round_trip(void) {
     run_test("round_trip_detect", test_round_trip_detect);
     run_test("round_trip_ready", test_round_trip_ready);
     run_test("round_trip_leave", test_round_trip_leave);
+    run_test("round_trip_transmit", test_round_trip_transmit);
 
     printf("All command round-trip tests passed.\n");
 }
