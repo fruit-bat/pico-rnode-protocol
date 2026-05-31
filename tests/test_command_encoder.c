@@ -332,6 +332,45 @@ static void test_pico_rnode_proto_command_leave(void) {
     assert_equal_bytes(frame, data, sizeof(frame));
 }
 
+static void test_pico_rnode_proto_transmit() {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_encoder_status_t status;
+
+    pico_rnode_proto_command_encoder_init_test(&encoder);
+
+    // Start a transmit command on interface 1
+    status = pico_rnode_proto_command_start(&encoder, 1);
+    assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+
+    // Send some data bytes
+    uint8_t payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
+    for (size_t i = 0; i < sizeof(payload); i++) {
+        status = pico_rnode_proto_command_data(&encoder, payload[i]);
+        assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    }
+
+    // End the transmit command
+    status = pico_rnode_proto_command_end(&encoder);
+    assert(status == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+
+    // The expected frame for the transmit command on interface 1 with payload 0xDEADBEEF is:
+    // Byte 0: 0x1D (Interface 1, opcode 0 - DATA)
+    // Byte 1-4: 0xDEADBEEF (payload data)
+    const uint8_t frame[] = { 
+        0x10, // Interface 1, opcode 0 (DATA - RNODE_OPCODE_DATA)
+        0xDE, // Payload byte 0
+        0xAD, // Payload byte 1
+        0xBE, // Payload byte 2
+        0xEF, // Payload byte 3
+    };
+
+    assert(start_cb_count == 1);
+    assert(put_cb_count == sizeof(frame));
+    assert(end_cb_count == 1);
+    assert(last_callback_context == &test_context);
+    assert_equal_bytes(frame, data, sizeof(frame));
+}
+
 static void run_test(const char *name, void (*fn)(void)) {
     printf("[ RUN ] %s\n", name);
     clear_test_state();
@@ -349,6 +388,7 @@ void test_command_encoder(void) {
     run_test("command_detect", test_pico_rnode_proto_command_detect);
     run_test("command_ready", test_pico_rnode_proto_command_ready);
     run_test("command_leave", test_pico_rnode_proto_command_leave);
-
+    run_test("command_transmit", test_pico_rnode_proto_transmit);
+    
     fprintf(stderr, "All command encoder tests passed!\n");
 }
