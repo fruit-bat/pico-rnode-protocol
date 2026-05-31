@@ -24,7 +24,7 @@ static void clear_test_state(void) {
     last_callback_context = NULL;
 }
 
-static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_start_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_start_cb_test(
     void * context
 ) {
     start_cb_count++;
@@ -34,7 +34,7 @@ static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_start_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_put_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_data_cb_test(
     void * context,
     uint8_t byte
 ) {
@@ -45,7 +45,7 @@ static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_put_cb_test(
     return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK;
 }
 
-static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_cmd_end_cb_test(
+static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_end_cb_test(
     void * context
 ) {
     end_cb_count++;
@@ -60,9 +60,9 @@ static void pico_rnode_proto_command_encoder_init_test(
     pico_rnode_proto_command_encoder_init(
         encoder,
         &test_context,
-        pico_rnode_proto_cmd_start_cb_test,
-        pico_rnode_proto_cmd_put_cb_test,
-        pico_rnode_proto_cmd_end_cb_test
+        pico_rnode_proto_frame_start_cb_test,
+        pico_rnode_proto_frame_data_cb_test,
+        pico_rnode_proto_frame_end_cb_test
     );
 }
 

@@ -54,9 +54,9 @@ typedef struct {
 void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_command_encoder_t *encoder,
     void * context,
-    pico_rnode_proto_cmd_start_cb_t start_cb,
-    pico_rnode_proto_cmd_put_cb_t put_cb,
-    pico_rnode_proto_cmd_end_cb_t end_cb
+    pico_rnode_proto_frame_start_cb_t start_cb,
+    pico_rnode_proto_frame_data_cb_t put_cb,
+    pico_rnode_proto_frame_end_cb_t end_cb
 );
 
 /**

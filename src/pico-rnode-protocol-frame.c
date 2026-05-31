@@ -3,9 +3,9 @@
 
 void pico_rnode_proto_frame_init(
     pico_rnode_proto_frame_t *frame,
-    pico_rnode_proto_cmd_start_cb_t start_cb,
-    pico_rnode_proto_cmd_put_cb_t put_cb,
-    pico_rnode_proto_cmd_end_cb_t end_cb
+    pico_rnode_proto_frame_start_cb_t start_cb,
+    pico_rnode_proto_frame_data_cb_t put_cb,
+    pico_rnode_proto_frame_end_cb_t end_cb
 ) {
     frame->byte_index = 0;
     frame->start_cb = start_cb;

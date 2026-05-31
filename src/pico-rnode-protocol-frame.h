@@ -34,7 +34,7 @@ typedef enum {
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
  */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_start_cb_t)(
+typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_start_cb_t)(
     void * context
 );
 
@@ -49,7 +49,7 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_start_cb_t)(
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
  */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_put_cb_t)(
+typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_data_cb_t)(
     void * context,
     uint8_t byte
 );
@@ -64,7 +64,7 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_put_cb_t)(
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to finalize the frame.
  * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the frame.
  */
-typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
+typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_end_cb_t)(
     void * context
 );
 
@@ -75,9 +75,9 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_cmd_end_cb_t)(
  */
 typedef struct {
     uint32_t byte_index; /**< Zero-based index of the next byte in the current frame. */
-    pico_rnode_proto_cmd_start_cb_t start_cb; /**< Callback invoked at the start of a new frame. */
-    pico_rnode_proto_cmd_put_cb_t put_cb;     /**< Callback invoked for each emitted byte. */
-    pico_rnode_proto_cmd_end_cb_t end_cb;     /**< Callback invoked at the end of the frame. */
+    pico_rnode_proto_frame_start_cb_t start_cb; /**< Callback invoked at the start of a new frame. */
+    pico_rnode_proto_frame_data_cb_t put_cb;    /**< Callback invoked for each emitted byte. */
+    pico_rnode_proto_frame_end_cb_t end_cb;     /**< Callback invoked at the end of the frame. */
 } pico_rnode_proto_frame_t;
 
 /**
@@ -94,9 +94,9 @@ typedef struct {
  */
 void pico_rnode_proto_frame_init(
     pico_rnode_proto_frame_t *frame,
-    pico_rnode_proto_cmd_start_cb_t start_cb,
-    pico_rnode_proto_cmd_put_cb_t put_cb,
-    pico_rnode_proto_cmd_end_cb_t end_cb
+    pico_rnode_proto_frame_start_cb_t start_cb,
+    pico_rnode_proto_frame_data_cb_t put_cb,
+    pico_rnode_proto_frame_end_cb_t end_cb
 );
 
 /**
