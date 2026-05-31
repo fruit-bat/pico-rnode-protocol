@@ -18,14 +18,14 @@ void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_encoder_init(&encoder->encoder, context, start_cb, put_cb, end_cb);
 }
 
-static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
+static inline pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_byte(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t byte
 ) {
     return pico_rnode_proto_encoder_send_byte(&encoder->encoder, byte);
 }
 
-static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
+static inline pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     rnode_opcode_t opcode
@@ -34,7 +34,7 @@ static pico_rnode_proto_frame_cb_status_t pico_rnode_proto_command_send_header(
 }
 
 // Status translation helper for command encoder functions
-static pico_rnode_proto_encoder_status_t translate_encoder_status(
+static inline pico_rnode_proto_encoder_status_t translate_encoder_status(
     pico_rnode_proto_frame_cb_status_t frame_status
 ) {
     switch (frame_status) {
@@ -47,7 +47,7 @@ static pico_rnode_proto_encoder_status_t translate_encoder_status(
     }
 }
 
-static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_bytes(
+static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_bytes(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     rnode_opcode_t opcode,
@@ -65,7 +65,7 @@ static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_a
     return status;
 }
 
-static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_word(
+static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_word(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     rnode_opcode_t opcode,
@@ -74,7 +74,7 @@ static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_a
     return pico_rnode_proto_encoder_send_command_and_word(&encoder->encoder, interface, opcode, word);
 }
 
-static pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_byte(
+static inline pico_rnode_proto_encoder_status_t pico_rnode_proto_command_send_command_and_byte(
     pico_rnode_proto_command_encoder_t *encoder,
     uint8_t interface,
     rnode_opcode_t opcode,
