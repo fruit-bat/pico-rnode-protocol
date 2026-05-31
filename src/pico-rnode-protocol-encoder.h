@@ -75,6 +75,59 @@ void pico_rnode_proto_encoder_init(
 );
 
 /**
+ * Start a new encoder frame by invoking the configured start callback.
+ *
+ * Parameters:
+ * - encoder: encoder instance handling output.
+ * - context: opaque user pointer passed to the callback (may be the same as
+ *            `encoder->context`).
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK when the start callback succeeded.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT when the start callback requests abort.
+ */
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_start(
+    pico_rnode_proto_encoder_t *encoder,
+    void *context
+);
+
+/**
+ * Emit a single byte for the currently-open encoder frame.
+ *
+ * Parameters:
+ * - encoder: encoder instance handling output.
+ * - context: opaque user pointer passed to the callback (may be the same as
+ *            `encoder->context`).
+ * - byte: byte to emit.
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK when the byte was accepted.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT when the put callback requests abort.
+ */
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_data(
+    pico_rnode_proto_encoder_t *encoder,
+    void *context,
+    uint8_t byte
+);
+
+/**
+ * End the current encoder frame by invoking the configured end callback.
+ *
+ * Parameters:
+ * - encoder: encoder instance handling output.
+ * - context: opaque user pointer passed to the callback (may be the same as
+ *            `encoder->context`).
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK when the end callback succeeded.
+ * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT when the end callback requests abort.
+ */
+pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_end(
+    pico_rnode_proto_encoder_t *encoder,
+    void *context
+);
+
+/**
  * Emit a single protocol byte into the current command frame.
  *
  * Parameters:
