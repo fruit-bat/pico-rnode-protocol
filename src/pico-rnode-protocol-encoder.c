@@ -49,14 +49,34 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_encoder_send_header(
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
-    pico_rnode_proto_encoder_t *encoder
+    pico_rnode_proto_encoder_t *encoder,
+    uint8_t interface
 ) {
     // Check we are not currently transmitting another command
     if (encoder->state == PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING) {
         return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR;
     }
+
+    // Start the transmission frame
+    pico_rnode_proto_frame_cb_status_t frame_status = pico_rnode_proto_frame_start(
+        &encoder->frame, 
+        encoder->context
+    );
+    
+    if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        return translate_frame_cb_status(frame_status);
+    }
+
     encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING;
-    return translate_frame_cb_status(pico_rnode_proto_frame_start(&encoder->frame, encoder->context));
+
+    // Send the header
+    frame_status = pico_rnode_proto_encoder_send_header(encoder, interface, RNODE_OPCODE_DATA);
+    if (frame_status != PICO_RNODE_PROTO_FRAME_CB_STATUS_OK) {
+        encoder->state = PICO_RNODE_PROTO_ENCODER_STATE_IDLE;
+        return translate_frame_cb_status(frame_status);
+    }
+
+    return PICO_RNODE_PROTO_ENCODER_STATUS_OK;
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_data(

@@ -7,6 +7,11 @@ extern "C" {
 #endif
 
 typedef enum {
+    RNODE_LOCK_STATE_UNLOCKED = 0x00,
+    RNODE_LOCK_STATE_LOCKED   = 0x01,
+} pico_rnode_proto_lock_state_t;
+
+typedef enum {
     RNODE_RADIO_STATE_OFF = 0x00,
     RNODE_RADIO_STATE_ON  = 0x01,
     RNODE_RADIO_STATE_ASK = 0xFF

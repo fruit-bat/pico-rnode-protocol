@@ -79,13 +79,15 @@ void pico_rnode_proto_encoder_init(
  *
  * Parameters:
  * - encoder: encoder instance handling output.
+ * - interface: target interface identifier to send transmission to.
  *
  * Returns:
  * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when the start callback succeeded.
  * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when the start callback requests abort.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_start(
-    pico_rnode_proto_encoder_t *encoder
+    pico_rnode_proto_encoder_t *encoder,
+    uint8_t interface
 );
 
 /**

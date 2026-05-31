@@ -59,6 +59,7 @@ void pico_rnode_proto_event_encoder_init(
  * 
  * Parameters:
  * - encoder: encoder instance used for output.
+ * - interface: target interface identifier to send transmission to.
  * 
  * Returns:
  * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
@@ -66,7 +67,8 @@ void pico_rnode_proto_event_encoder_init(
  * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_start(
-    pico_rnode_proto_event_encoder_t *encoder
+    pico_rnode_proto_event_encoder_t *encoder,
+    uint8_t interface
 );
 
 /**

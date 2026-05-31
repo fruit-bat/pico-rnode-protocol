@@ -94,9 +94,10 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
-    pico_rnode_proto_command_encoder_t *encoder
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface
 ) {
-    return pico_rnode_proto_encoder_start(&encoder->encoder);
+    return pico_rnode_proto_encoder_start(&encoder->encoder, interface);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
