@@ -9,48 +9,32 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 #include "pico-rnode-protocol-consts.h"
-#include "pico-rnode-protocol-frame.h"
+#include "pico-rnode-protocol-encoder.h"
 
 // -----------------------------------------------------------
 // Encoder for outgoing protocol commands (e.g. from host to radio).
 // -----------------------------------------------------------
 
 /**
- * Encoder status codes.
+ * Command encoder is a wrapper around the protocol encoder.
  *
- * These values indicate whether a command was encoded successfully or whether
- * the encoder encountered an error such as an in-progress frame conflict.
+ * The command encoder provides command-specific encoding functions that
+ * use the underlying protocol encoder for frame management.
  */
-typedef enum {
-    PICO_RNODE_PROTO_ENCODER_STATUS_OK = 0,    /**< Command encoded successfully. */
-    PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED,   /**< Encoding aborted by callback or internal error. */
-    PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR, /**< A frame is already open when a new command was requested. */
-} pico_rnode_proto_encoder_status_t;
-
-/**
- * Encoder state machine state values.
- */
-typedef enum {
-    PICO_RNODE_PROTO_ENCODER_STATE_IDLE = 0,        /**< Encoder is ready for a new command. */
-    PICO_RNODE_PROTO_ENCODER_STATE_TRANSMITTING,    /**< A command frame is currently being emitted. */
-} pico_rnode_proto_encoder_state_t;
 
 /**
  * Outgoing command encoder instance.
  *
- * This struct holds encoder state and the callbacks required to write bytes
- * into the transport layer.
+ * This struct wraps a protocol encoder to provide command-specific encoding
+ * functions. The protocol encoder handles all frame start/byte/end operations.
  */
 typedef struct {
-    void * context;                         /**< User-provided callback context. */
-    pico_rnode_proto_encoder_state_t state; /**< Current encoder state. */
     /**
-     * Frame helper used to emit a complete command frame.
+     * Internal protocol encoder used to emit command frames.
      *
-     * The encoder delegates frame start/byte/end operations to this helper
-     * which wraps the user-provided callbacks.
+     * The command encoder delegates all frame operations to this helper.
      */
-    pico_rnode_proto_frame_t frame;
+    pico_rnode_proto_encoder_t encoder;
 } pico_rnode_proto_command_encoder_t;
 
 /**
