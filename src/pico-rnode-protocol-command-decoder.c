@@ -246,7 +246,7 @@ static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_
             break;
         case RNODE_OPCODE_RADIO_LOCK:
             if (decoder->lock_cb) {
-                decoder->lock_cb(decoder->context);
+                decoder->lock_cb(decoder->context, decoder->interface, (uint8_t)value);
             }
             break;
         default:

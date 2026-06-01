@@ -174,6 +174,25 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
 );
 
 /**
+ * Encode a radio lock command.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: target interface identifier.
+ * - lock_state: lock state value (0 = unlock, 1 = lock).
+ *
+ * Returns:
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ */
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_lock(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t lock_state
+);
+
+/**
  * Encode a radio detect command.
  *
  * Parameters:

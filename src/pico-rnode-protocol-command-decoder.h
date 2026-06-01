@@ -177,7 +177,9 @@ typedef void (*pico_rnode_proto_command_leave_cb_t)(
  * - context: opaque user pointer passed to the callback.
  */
 typedef void (*pico_rnode_proto_command_lock_cb_t)(
-    void * context
+    void * context,
+    uint8_t interface,
+    uint8_t lock_state
 );
 
 /**

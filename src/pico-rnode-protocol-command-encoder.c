@@ -66,6 +66,14 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
     return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_RADIO_STATE, (uint8_t)state);
 }
 
+pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_lock(
+    pico_rnode_proto_command_encoder_t *encoder,
+    uint8_t interface,
+    uint8_t lock_state
+) {
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_RADIO_LOCK, lock_state);
+}
+
 /**
  * Send DETECT command on interface 0 (global) to perform radio detection.
  */

@@ -150,9 +150,11 @@ void pico_rnode_proto_command_leave_cb_test(
 }
 
 void pico_rnode_proto_command_lock_cb_test(
-    void * context
+    void * context,
+    uint8_t interface,
+    uint8_t lock_state
 ) {
-    fprintf(stderr, "lock_cb called\n");
+    fprintf(stderr, "lock_cb called with interface=%u, lock_state=%u\n", interface, lock_state);
     last_callback_context = context;
     lock_cb_count++;
 }

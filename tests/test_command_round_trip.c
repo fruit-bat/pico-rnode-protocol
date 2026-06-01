@@ -153,8 +153,14 @@ static void roundtrip_decoder_ready_cb(void *context) {
     state->ready_count++;
 }
 
-static void roundtrip_decoder_lock_cb(void *context) {
+static void roundtrip_decoder_lock_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t lock_state
+) {
     (void)context;
+    (void)interface;
+    (void)lock_state;
 }
 
 static void roundtrip_decoder_leave_cb(void *context) {
