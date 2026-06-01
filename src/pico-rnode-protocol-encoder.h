@@ -139,7 +139,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_encoder_send_command_and_byte
     pico_rnode_proto_encoder_t *encoder,
     uint8_t interface,
     rnode_opcode_t opcode,
-    uint8_t* bytes,
+    const uint8_t* bytes,
     size_t len
 );
 
