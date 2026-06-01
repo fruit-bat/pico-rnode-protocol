@@ -8,9 +8,12 @@
 extern void test_command_decoder(void);
 extern void test_command_encoder(void);
 extern void test_command_round_trip(void);
+extern void test_event_decoder(void);
+extern void test_event_encoder(void);
+extern void test_event_round_trip(void);
 
 static void usage(const char *program_name) {
-    printf("Usage: %s [all|encoder|decoder|round_trip]\n", program_name);
+    printf("Usage: %s [all|command_encoder|command_decoder|command_round_trip|event_encoder|event_decoder|event_round_trip]\n", program_name);
 }
 
 int main(int argc, char **argv) {
@@ -27,12 +30,21 @@ int main(int argc, char **argv) {
         test_command_encoder();
         test_command_decoder();
         test_command_round_trip();
-    } else if (strcmp(mode, "encoder") == 0) {
+        test_event_encoder();
+        test_event_decoder();
+        test_event_round_trip();
+    } else if (strcmp(mode, "command_encoder") == 0) {
         test_command_encoder();
-    } else if (strcmp(mode, "decoder") == 0) {
+    } else if (strcmp(mode, "command_decoder") == 0) {
         test_command_decoder();
-    } else if (strcmp(mode, "round_trip") == 0) {
+    } else if (strcmp(mode, "command_round_trip") == 0) {
         test_command_round_trip();
+    } else if (strcmp(mode, "event_encoder") == 0) {
+        test_event_encoder();
+    } else if (strcmp(mode, "event_decoder") == 0) {
+        test_event_decoder();
+    } else if (strcmp(mode, "event_round_trip") == 0) {
+        test_event_round_trip();
     } else {
         usage(argv[0]);
         return 1;
