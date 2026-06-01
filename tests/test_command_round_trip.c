@@ -17,6 +17,7 @@ typedef struct {
     uint8_t expected_spreading_factor;
     uint8_t expected_coding_rate;
     pico_rnode_proto_radio_state_t expected_radio_state;
+    uint8_t expected_lock_state;
 
     uint32_t detect_count;
     uint32_t frequency_count;
@@ -25,6 +26,7 @@ typedef struct {
     uint32_t spreading_factor_count;
     uint32_t coding_rate_count;
     uint32_t radio_state_count;
+    uint32_t lock_count;
     uint32_t ready_count;
     uint32_t leave_count;
     uint32_t error_count;
@@ -158,9 +160,10 @@ static void roundtrip_decoder_lock_cb(
     uint8_t interface,
     uint8_t lock_state
 ) {
-    (void)context;
-    (void)interface;
-    (void)lock_state;
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(lock_state == state->expected_lock_state);
+    state->lock_count++;
 }
 
 static void roundtrip_decoder_leave_cb(void *context) {
@@ -365,6 +368,25 @@ static void test_round_trip_set_radio_state(void) {
     assert(rt_state.error_count == 0);
 }
 
+static void test_round_trip_set_radio_lock(void) {
+    pico_rnode_proto_command_encoder_t encoder = {0};
+    pico_rnode_proto_command_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 3;
+    rt_state.expected_lock_state = 1;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    assert(pico_rnode_proto_command_set_radio_lock(&encoder, 3, 1) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 2);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.lock_count == 1);
+    assert(rt_state.error_count == 0);
+}
+
 static void test_round_trip_detect(void) {
     pico_rnode_proto_command_encoder_t encoder = {0};
     pico_rnode_proto_command_decoder_t decoder = {0};
@@ -462,6 +484,7 @@ void test_command_round_trip(void) {
     run_test("round_trip_set_spreading_factor", test_round_trip_set_spreading_factor);
     run_test("round_trip_set_coding_rate", test_round_trip_set_coding_rate);
     run_test("round_trip_set_radio_state", test_round_trip_set_radio_state);
+    run_test("round_trip_set_radio_lock", test_round_trip_set_radio_lock);
     run_test("round_trip_detect", test_round_trip_detect);
     run_test("round_trip_ready", test_round_trip_ready);
     run_test("round_trip_leave", test_round_trip_leave);
