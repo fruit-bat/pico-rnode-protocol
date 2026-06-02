@@ -18,7 +18,7 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_error(
     uint8_t interface,
     uint8_t error_code
 ) {
-    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_DATA, error_code);
+    return pico_rnode_proto_encoder_send_command_and_byte(&encoder->encoder, interface, RNODE_OPCODE_ERROR, error_code);
 }
 
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stat_rx(

@@ -46,6 +46,7 @@ typedef enum {
     RNODE_OPCODE_ROM_READ          = 0x51,
     RNODE_OPCODE_RESET             = 0x55,
     RNODE_OPCODE_INTERFACES        = 0x71,
+    RNODE_OPCODE_ERROR             = 0x7F,
 } rnode_opcode_t;
 
 #ifdef __cplusplus
