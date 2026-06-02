@@ -53,18 +53,43 @@ void pico_rnode_proto_event_encoder_init(
 );
 
 
+/**
+ * Encode an RSSI event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - rssi: received signal strength indicator in dBm.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_rssi(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     int8_t rssi
 );
 
+/**
+ * Encode an SNR event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - snr: signal-to-noise ratio in dB.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_snr(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     int8_t snr
 );
 
+/**
+ * Encode a statistics event reporting packet counts.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - packets_received: number of packets received.
+ * - packets_lost: number of packets lost.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stats(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
@@ -72,12 +97,29 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stats(
     uint32_t packets_lost
 );
 
+/**
+ * Encode an error event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - error_code: protocol-specific error code.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_error(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     uint8_t error_code
 );
 
+/**
+ * Encode a received payload event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - payload: pointer to payload data.
+ * - len: payload length in bytes.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stat_rx(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
@@ -85,6 +127,15 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stat_rx(
     size_t len
 );
 
+/**
+ * Encode a transmitted payload event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - payload: pointer to payload data.
+ * - len: payload length in bytes.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stat_tx(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
@@ -92,35 +143,83 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_stat_tx(
     size_t len
 );
 
+/**
+ * Encode a blink event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_blink(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface
 );
 
+/**
+ * Encode a random value event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - random_value: random value to encode.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_random(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     uint8_t random_value
 );
 
+/**
+ * Encode a platform identifier event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - platform_id: platform identifier value.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_platform(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     uint8_t platform_id
 );
 
+/**
+ * Encode an MCU identifier event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - mcu_id: MCU identifier value.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_mcu(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     uint8_t mcu_id
 );
 
+/**
+ * Encode a firmware version event.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - version: firmware version value.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_fw_version(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     uint16_t version
 );
 
+/**
+ * Encode a ROM read event with payload data.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - payload: pointer to ROM data.
+ * - len: payload length in bytes.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_rom_read(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
@@ -128,6 +227,15 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_rom_read(
     size_t len
 );
 
+/**
+ * Encode a reset event with optional payload.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - payload: pointer to reset payload data.
+ * - len: payload length in bytes.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_reset(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
@@ -135,19 +243,21 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_event_reset(
     size_t len
 );
 
+/**
+ * Encode an interfaces event with payload data.
+ *
+ * Parameters:
+ * - encoder: encoder instance used for output.
+ * - interface: source interface identifier.
+ * - payload: pointer to interface payload data.
+ * - len: payload length in bytes.
+ */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_event_interfaces(
     pico_rnode_proto_event_encoder_t *encoder,
     uint8_t interface,
     const uint8_t *payload,
     size_t len
 );
-
-
-
-
-
-
-
 
 /**
  * Encode the start of a receive data frame. Subsequent data bytes should be sent
