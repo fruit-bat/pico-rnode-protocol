@@ -25,7 +25,7 @@ add_executable(host_tests
 )
 
 target_include_directories(host_tests PRIVATE
-  ../src
+  ../include
   ${CMAKE_CURRENT_LIST_DIR}/tests
 )
 

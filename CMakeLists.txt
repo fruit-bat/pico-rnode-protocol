@@ -5,5 +5,5 @@ target_sources(pico_rnode_protocol INTERFACE
 )
 
 target_include_directories(pico_rnode_protocol INTERFACE
-    src
+    include
 )
