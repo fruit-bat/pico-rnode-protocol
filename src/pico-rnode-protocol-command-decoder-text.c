@@ -164,16 +164,17 @@ static void text_decoder_error_cb(
 
 void pico_rnode_proto_command_decoder_text_init(
     pico_rnode_proto_command_decoder_text_t *text_decoder,
+    pico_rnode_proto_command_decoder_t* decoder,
     FILE *out
 ) {
-    if (!text_decoder) {
+    if (!text_decoder || !decoder) {
         return;
     }
 
     text_decoder->out = out ? out : stdout;
 
     pico_rnode_proto_command_decoder_init(
-        &text_decoder->decoder,
+        decoder,
         text_decoder,
         text_decoder_detect_cb,
         text_decoder_set_frequency_cb,
@@ -192,41 +193,3 @@ void pico_rnode_proto_command_decoder_text_init(
     );
 }
 
-pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_text_put(
-    pico_rnode_proto_command_decoder_text_t *text_decoder,
-    uint8_t byte
-) {
-    if (!text_decoder) {
-        return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
-    }
-    return pico_rnode_proto_command_decoder_put(&text_decoder->decoder, byte);
-}
-
-pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_text_write(
-    pico_rnode_proto_command_decoder_text_t *text_decoder,
-    const uint8_t *bytes,
-    size_t len
-) {
-    if (!text_decoder || !bytes) {
-        return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
-    }
-    return pico_rnode_proto_command_decoder_write(&text_decoder->decoder, bytes, len);
-}
-
-void pico_rnode_proto_command_decoder_text_start(
-    pico_rnode_proto_command_decoder_text_t *text_decoder
-) {
-    if (!text_decoder) {
-        return;
-    }
-    pico_rnode_proto_command_decoder_start(&text_decoder->decoder);
-}
-
-pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_text_end(
-    pico_rnode_proto_command_decoder_text_t *text_decoder
-) {
-    if (!text_decoder) {
-        return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED;
-    }
-    return pico_rnode_proto_command_decoder_end(&text_decoder->decoder);
-}

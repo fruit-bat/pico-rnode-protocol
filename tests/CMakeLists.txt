@@ -8,6 +8,7 @@ enable_testing()
 
 add_executable(host_tests
   test_command_decoder.c
+  test_command_decoder_text.c
   test_command_encoder.c
   test_command_round_trip.c
   test_event_decoder.c
@@ -16,6 +17,7 @@ add_executable(host_tests
   test_main.c
   test_utils.c
   ../src/pico-rnode-protocol-command-decoder.c
+  ../src/pico-rnode-protocol-command-decoder-text.c
   ../src/pico-rnode-protocol-command-encoder.c
   ../src/pico-rnode-protocol-stream.c
   ../src/pico-rnode-protocol-frame.c
