@@ -28,6 +28,7 @@
 #include "pico-serial-proxy.h"
 #include "pico-serial-recording.h"
 #include "pico-rnode-protocol-command-decoder-text.h"
+#include "pico-rnode-protocol-event-decoder.h"
 
 #define BUFFER_SIZE 1024
 #define MAX_FRAME_BYTES 2048
@@ -62,6 +63,7 @@ typedef struct monitor_context {
     uint8_t frame[MAX_FRAME_BYTES];
     size_t frame_len;
     void *rnode_decoder;
+    int decode_as_command;
     pico_rnode_proto_decoder_mon_start_t start;
     pico_rnode_proto_decoder_mon_put_t put;
     pico_rnode_proto_decoder_mon_write_t write;
@@ -106,17 +108,180 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_mon_end(
     );
 }
 
-static void print_hex_frame(const char *prefix, const uint8_t *data, size_t len) {
-    printf("%s [%zu]:", prefix, len);
-    for (size_t i = 0; i < len; i++) {
-        printf(" %02X", data[i]);
+static const char *monitor_event_status_to_string(
+    pico_rnode_proto_event_decoder_status_t status
+) {
+    switch (status) {
+        case PICO_RNODE_PROTO_EVENT_DECODER_STATUS_OK:
+            return "OK";
+        case PICO_RNODE_PROTO_EVENT_DECODER_STATUS_ABORTED:
+            return "ABORTED";
+        case PICO_RNODE_PROTO_EVENT_DECODER_STATUS_INVALID_LENGTH:
+            return "INVALID_LENGTH";
+        case PICO_RNODE_PROTO_EVENT_DECODER_STATUS_UNKNOWN_OPCODE:
+            return "UNKNOWN_OPCODE";
+        case PICO_RNODE_PROTO_EVENT_DECODER_STATUS_INVALID_ARGUMENT:
+            return "INVALID_ARGUMENT";
+        default:
+            return "UNKNOWN";
     }
-    printf("\n");
+}
+
+static void monitor_event_rssi_cb(
+    void *context,
+    uint8_t interface,
+    int8_t rssi
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT RSSI interface=%u rssi=%d\n", ctx->direction, interface, rssi);
+}
+
+static void monitor_event_snr_cb(
+    void *context,
+    uint8_t interface,
+    int8_t snr
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT SNR interface=%u snr=%d\n", ctx->direction, interface, snr);
+}
+
+static void monitor_event_blink_cb(void *context) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT BLINK\n", ctx->direction);
+}
+
+static void monitor_event_random_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t random_value
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT RANDOM interface=%u value=0x%02X\n", ctx->direction, interface, random_value);
+}
+
+static void monitor_event_platform_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t platform_id
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT PLATFORM interface=%u id=0x%02X\n", ctx->direction, interface, platform_id);
+}
+
+static void monitor_event_mcu_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t mcu_id
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT MCU interface=%u id=0x%02X\n", ctx->direction, interface, mcu_id);
+}
+
+static void monitor_event_fw_version_cb(
+    void *context,
+    uint8_t interface,
+    uint16_t version
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT FW_VERSION interface=%u version=0x%04X\n", ctx->direction, interface, version);
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_rx_start_cb(
+    void *context,
+    uint8_t interface
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_RX START interface=%u\n", ctx->direction, interface);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_rx_data_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t byte,
+    uint32_t byte_index
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_RX interface=%u index=%u byte=0x%02X\n",
+           ctx->direction,
+           interface,
+           byte_index,
+           byte);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_rx_end_cb(
+    void *context,
+    uint8_t interface,
+    uint32_t length
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_RX END interface=%u length=%u\n", ctx->direction, interface, length);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_tx_start_cb(
+    void *context,
+    uint8_t interface
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_TX START interface=%u\n", ctx->direction, interface);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_tx_data_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t byte,
+    uint32_t byte_index
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_TX interface=%u index=%u byte=0x%02X\n",
+           ctx->direction,
+           interface,
+           byte_index,
+           byte);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static pico_rnode_proto_stream_cb_status_t monitor_event_stat_tx_end_cb(
+    void *context,
+    uint8_t interface,
+    uint32_t length
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT STAT_TX END interface=%u length=%u\n", ctx->direction, interface, length);
+    return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
+}
+
+static void monitor_event_error_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t opcode,
+    uint32_t index,
+    pico_rnode_proto_event_decoder_status_t status
+) {
+    monitor_context_t *ctx = (monitor_context_t *)context;
+    printf("%s EVENT ERROR interface=%u opcode=0x%02X index=%u status=%s\n",
+           ctx->direction,
+           interface,
+           opcode,
+           index,
+           monitor_event_status_to_string(status));
 }
 
 static void decoder_start(void *data) {
     struct monitor_context *ctx = (struct monitor_context *)data;
     ctx->frame_len = 0;
+    if (ctx->decode_as_command) {
+        pico_rnode_proto_command_decoder_start(
+            (pico_rnode_proto_command_decoder_t *)ctx->rnode_decoder
+        );
+    } else {
+        pico_rnode_proto_event_decoder_start(
+            (pico_rnode_proto_event_decoder_t *)ctx->rnode_decoder
+        );
+    }
 }
 
 static pico_kiss_proto_decoder_data_cb_status_t decoder_data(
@@ -129,13 +294,32 @@ static pico_kiss_proto_decoder_data_cb_status_t decoder_data(
     if (ctx->frame_len < sizeof(ctx->frame)) {
         ctx->frame[ctx->frame_len++] = byte;
     }
+    if (ctx->decode_as_command) {
+        (void)pico_rnode_proto_command_decoder_put(
+            (pico_rnode_proto_command_decoder_t *)ctx->rnode_decoder,
+            byte
+        );
+    } else {
+        (void)pico_rnode_proto_event_decoder_put(
+            (pico_rnode_proto_event_decoder_t *)ctx->rnode_decoder,
+            byte
+        );
+    }
     return PICO_KISS_PROTO_DECODER_DATA_CB_STATUS_OK;
 }
 
 static void decoder_end(void *data, pico_kiss_proto_frame_info_t *info) {
     struct monitor_context *ctx = (struct monitor_context *)data;
     if (info->status == PICO_KISS_PROTO_DECODER_STATUS_FRAME_COMPLETE) {
-        print_hex_frame(ctx->direction, ctx->frame, ctx->frame_len);
+        if (ctx->decode_as_command) {
+            (void)pico_rnode_proto_command_decoder_end(
+                (pico_rnode_proto_command_decoder_t *)ctx->rnode_decoder
+            );
+        } else {
+            (void)pico_rnode_proto_event_decoder_end(
+                (pico_rnode_proto_event_decoder_t *)ctx->rnode_decoder
+            );
+        }
     } else {
         printf("%s [error=%s, len=%u]\n",
                ctx->direction,
@@ -250,21 +434,70 @@ int main(int argc, char *argv[]) {
     static struct monitor_context incoming_ctx = {
         .direction = "H<-D",
         .frame_len = 0,
+        .decode_as_command = 0,
     };
     static struct monitor_context outgoing_ctx = {
         .direction = "H->D",
         .frame_len = 0,
+        .decode_as_command = 1,
     };
 
     static pico_kiss_proto_decoder_t incoming_decoder;
     static pico_kiss_proto_decoder_t outgoing_decoder;
-    static pico_rnode_proto_command_decoder_t command_decoder;
-    static pico_rnode_proto_command_decoder_text_t command_text_decoder;
+    static pico_rnode_proto_command_decoder_t incoming_command_decoder;
+    static pico_rnode_proto_command_decoder_t outgoing_command_decoder;
+    static pico_rnode_proto_command_decoder_text_t incoming_command_text_decoder;
+    static pico_rnode_proto_command_decoder_text_t outgoing_command_text_decoder;
+    static pico_rnode_proto_event_decoder_t incoming_event_decoder;
+    static pico_rnode_proto_event_decoder_t outgoing_event_decoder;
+
+    incoming_ctx.rnode_decoder = &incoming_event_decoder;
+    outgoing_ctx.rnode_decoder = &outgoing_command_decoder;
 
     pico_rnode_proto_command_decoder_text_init(
-        &command_text_decoder,
-        &command_decoder,
+        &incoming_command_text_decoder,
+        &incoming_command_decoder,
         stdout);
+    pico_rnode_proto_command_decoder_text_init(
+        &outgoing_command_text_decoder,
+        &outgoing_command_decoder,
+        stdout);
+
+    pico_rnode_proto_event_decoder_init(
+        &incoming_event_decoder,
+        &incoming_ctx,
+        monitor_event_rssi_cb,
+        monitor_event_snr_cb,
+        monitor_event_blink_cb,
+        monitor_event_random_cb,
+        monitor_event_platform_cb,
+        monitor_event_mcu_cb,
+        monitor_event_fw_version_cb,
+        monitor_event_stat_rx_start_cb,
+        monitor_event_stat_rx_data_cb,
+        monitor_event_stat_rx_end_cb,
+        monitor_event_stat_tx_start_cb,
+        monitor_event_stat_tx_data_cb,
+        monitor_event_stat_tx_end_cb,
+        monitor_event_error_cb);
+
+    pico_rnode_proto_event_decoder_init(
+        &outgoing_event_decoder,
+        &outgoing_ctx,
+        monitor_event_rssi_cb,
+        monitor_event_snr_cb,
+        monitor_event_blink_cb,
+        monitor_event_random_cb,
+        monitor_event_platform_cb,
+        monitor_event_mcu_cb,
+        monitor_event_fw_version_cb,
+        monitor_event_stat_rx_start_cb,
+        monitor_event_stat_rx_data_cb,
+        monitor_event_stat_rx_end_cb,
+        monitor_event_stat_tx_start_cb,
+        monitor_event_stat_tx_data_cb,
+        monitor_event_stat_tx_end_cb,
+        monitor_event_error_cb);
 
     pico_kiss_proto_decoder_init(&incoming_decoder,
                                  &incoming_ctx,
