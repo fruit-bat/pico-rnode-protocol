@@ -41,15 +41,17 @@ typedef struct {
 /**
  * Initialize a command encoder instance.
  *
- * Parameters:
- * - encoder: encoder instance to initialize.
- * - context: opaque user context passed to callbacks.
- * - start_cb: callback invoked at frame start.
- * - put_cb: callback invoked for each emitted byte.
- * - end_cb: callback invoked at frame end.
+ * @param encoder encoder instance to initialize.
+
+ * @param context opaque user context passed to callbacks.
+
+ * @param start_cb callback invoked at frame start.
+
+ * @param put_cb callback invoked for each emitted byte.
+
+ * @param end_cb callback invoked at frame end.
  *
- * Returns:
- * - None.
+ * @return None.
  */
 void pico_rnode_proto_command_encoder_init(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -62,15 +64,17 @@ void pico_rnode_proto_command_encoder_init(
 /**
  * Encode a set frequency command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - hz: frequency in Hertz.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param hz frequency in Hertz.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_frequency(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -81,15 +85,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_frequency(
 /**
  * Encode a set bandwidth command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - bandwidth: bandwidth in Hertz.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param bandwidth bandwidth in Hertz.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -100,15 +106,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_bandwidth(
 /**
  * Encode a set transmit power command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - dbm: transmit power in dBm.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param dbm transmit power in dBm.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -119,15 +127,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_txpower(
 /**
  * Encode a set spreading factor command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - sf: LoRa spreading factor.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param sf LoRa spreading factor.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -138,15 +148,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_spreading_factor(
 /**
  * Encode a set coding rate command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - cr: LoRa coding rate.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param cr LoRa coding rate.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -157,15 +169,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_coding_rate(
 /**
  * Encode a set radio state command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - state: radio state value.
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param state radio state value.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -176,15 +190,17 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_state(
 /**
  * Encode a radio lock command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
- * - interface: target interface identifier.
- * - lock_state: lock state value (0 = unlock, 1 = lock).
+ * @param encoder encoder instance used for output.
+
+ * @param interface target interface identifier.
+
+ * @param lock_state lock state value (0 = unlock, 1 = lock).
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_lock(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -195,13 +211,13 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_set_radio_lock(
 /**
  * Encode a radio detect command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
+ * @param encoder encoder instance used for output.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
     pico_rnode_proto_command_encoder_t *encoder
@@ -210,13 +226,13 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_detect(
 /**
  * Encode a ready notification command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
+ * @param encoder encoder instance used for output.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
     pico_rnode_proto_command_encoder_t *encoder
@@ -225,13 +241,13 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_ready(
 /**
  * Encode a leave command.
  *
- * Parameters:
- * - encoder: encoder instance used for output.
+ * @param encoder encoder instance used for output.
  *
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
     pico_rnode_proto_command_encoder_t *encoder
@@ -242,14 +258,14 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_leave(
  * using pico_rnode_proto_command_data(), and the frame should be finalized with
  * pico_rnode_proto_command_end().
  * 
- * Parameters:
- * - encoder: encoder instance used for output.
+ * @param encoder encoder instance used for output.
  * 
  * 
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when a frame is already open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -259,14 +275,15 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_start(
 /**
  * Encode a single byte of payload data for the current transmit frame.
  * 
- * Parameters:
- * - encoder: encoder instance used for output.
- * - byte: byte to include in the current transmit frame.
+ * @param encoder encoder instance used for output.
+ 
+ * @param byte byte to include in the current transmit frame.
  * 
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
     pico_rnode_proto_command_encoder_t *encoder,
@@ -276,13 +293,13 @@ pico_rnode_proto_encoder_status_t pico_rnode_proto_command_data(
 /**
  * Encode the end of a transmit data frame.
  * 
- * Parameters:
- * - encoder: encoder instance used for output.
+ * @param encoder encoder instance used for output.
  * 
- * Returns:
- * - PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
- * - PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_OK when encoding succeeded.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_ABORTED when encoding was aborted.
+ 
+ * @return PICO_RNODE_PROTO_ENCODER_STATUS_FRAME_ERROR when no frame is currently open.
  */
 pico_rnode_proto_encoder_status_t pico_rnode_proto_command_end(
     pico_rnode_proto_command_encoder_t *encoder

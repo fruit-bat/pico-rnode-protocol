@@ -27,12 +27,11 @@ typedef enum {
 /**
  * Callback invoked to begin a new command frame.
  *
- * Parameters:
- * - context: user-provided opaque context pointer.
+ * @param context user-provided opaque context pointer.
  *
- * Return:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
  */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_start_cb_t)(
     void * context
@@ -41,13 +40,13 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_start_cb_t)(
 /**
  * Callback invoked to emit a single protocol byte.
  *
- * Parameters:
- * - context: user-provided opaque context pointer.
- * - byte: byte to emit into the current frame.
+ * @param context user-provided opaque context pointer.
+
+ * @param byte byte to emit into the current frame.
  *
- * Return:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to continue encoding.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the command.
  */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_data_cb_t)(
     void * context,
@@ -57,12 +56,11 @@ typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_data_cb_t)(
 /**
  * Callback invoked to end the current command frame.
  *
- * Parameters:
- * - context: user-provided opaque context pointer.
+ * @param context user-provided opaque context pointer.
  *
- * Return:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to finalize the frame.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the frame.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK to finalize the frame.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT to abort the frame.
  */
 typedef pico_rnode_proto_frame_cb_status_t (*pico_rnode_proto_frame_end_cb_t)(
     void * context
@@ -83,14 +81,15 @@ typedef struct {
 /**
  * Initialize a frame context with the provided callbacks.
  *
- * Parameters:
- * - frame: pointer to the frame context to initialize.
- * - start_cb: callback invoked at the start of a new frame.
- * - put_cb: callback invoked for each byte emitted into the frame.
- * - end_cb: callback invoked at the end of the frame.
+ * @param frame pointer to the frame context to initialize.
+
+ * @param start_cb callback invoked at the start of a new frame.
+
+ * @param put_cb callback invoked for each byte emitted into the frame.
+
+ * @param end_cb callback invoked at the end of the frame.
  *
- * Returns:
- * - None.
+ * @return None.
  */
 void pico_rnode_proto_frame_init(
     pico_rnode_proto_frame_t *frame,
@@ -102,13 +101,13 @@ void pico_rnode_proto_frame_init(
 /**
  * Start a new frame by resetting the byte index and invoking the start callback.
  *
- * Parameters:
- * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callback.
+ * @param frame pointer to the frame context.
+
+ * @param context opaque user pointer passed to the callback.
  *
- * Returns:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame start succeeded.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the start callback requests abort.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame start succeeded.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the start callback requests abort.
  */
 pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_start(
     pico_rnode_proto_frame_t *frame,
@@ -118,14 +117,15 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_start(
 /**
  * Emit a byte into the current frame and advance the byte index.
  *
- * Parameters:
- * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callback.
- * - byte: byte to emit into the current frame.
+ * @param frame pointer to the frame context.
+
+ * @param context opaque user pointer passed to the callback.
+
+ * @param byte byte to emit into the current frame.
  *
- * Returns:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the byte was accepted.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the put callback requests abort.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the byte was accepted.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the put callback requests abort.
  */
 pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_put_byte(
     pico_rnode_proto_frame_t *frame,
@@ -136,13 +136,13 @@ pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_put_byte(
 /**
  * End the current frame by invoking the end callback.
  *
- * Parameters:
- * - frame: pointer to the frame context.
- * - context: opaque user pointer passed to the callback.
+ * @param frame pointer to the frame context.
+
+ * @param context opaque user pointer passed to the callback.
  *
- * Returns:
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame end succeeded.
- * - PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the end callback requests abort.
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_OK if the frame end succeeded.
+
+ * @return PICO_RNODE_PROTO_FRAME_CB_STATUS_ABORT if the end callback requests abort.
  */
 pico_rnode_proto_frame_cb_status_t pico_rnode_proto_frame_end(
     pico_rnode_proto_frame_t *frame,

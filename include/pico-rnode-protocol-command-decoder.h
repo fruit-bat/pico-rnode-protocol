@@ -41,12 +41,15 @@ typedef enum {
 /**
  * Callback invoked when a decoder error occurs.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier where the error occurred.
- * - opcode: command opcode being decoded when the error was detected.
- * - index: byte index within the current payload where the error occurred.
- * - status: decoder status code describing the error.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier where the error occurred.
+
+ * @param opcode command opcode being decoded when the error was detected.
+
+ * @param index byte index within the current payload where the error occurred.
+
+ * @param status decoder status code describing the error.
  */
 typedef void (*pico_rnode_proto_decoder_error_cb_t)(
     void * context,
@@ -59,10 +62,11 @@ typedef void (*pico_rnode_proto_decoder_error_cb_t)(
 /**
  * Command handler for setting the RF frequency.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - hz: frequency in Hertz to apply.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param hz frequency in Hertz to apply.
  */
 typedef void (*pico_rnode_proto_command_set_frequency_cb_t)(
     void * context,
@@ -73,10 +77,11 @@ typedef void (*pico_rnode_proto_command_set_frequency_cb_t)(
 /**
  * Command handler for setting the RF bandwidth.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - bandwidth: bandwidth in Hertz to apply.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param bandwidth bandwidth in Hertz to apply.
  */
 typedef void (*pico_rnode_proto_command_set_bandwidth_cb_t)(
     void * context,
@@ -87,10 +92,11 @@ typedef void (*pico_rnode_proto_command_set_bandwidth_cb_t)(
 /**
  * Command handler for setting the transmit power.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - dbm: transmit power in dBm.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param dbm transmit power in dBm.
  */
 typedef void (*pico_rnode_proto_command_set_txpower_cb_t)(
     void * context,
@@ -101,10 +107,11 @@ typedef void (*pico_rnode_proto_command_set_txpower_cb_t)(
 /**
  * Command handler for setting the LoRa spreading factor.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - sf: LoRa spreading factor value.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param sf LoRa spreading factor value.
  */
 typedef void (*pico_rnode_proto_command_set_spreading_factor_cb_t)(
     void * context,
@@ -115,10 +122,11 @@ typedef void (*pico_rnode_proto_command_set_spreading_factor_cb_t)(
 /**
  * Command handler for setting the LoRa coding rate.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - cr: LoRa coding rate value.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param cr LoRa coding rate value.
  */
 typedef void (*pico_rnode_proto_command_set_coding_rate_cb_t)(
     void * context,
@@ -129,8 +137,7 @@ typedef void (*pico_rnode_proto_command_set_coding_rate_cb_t)(
 /**
  * Command handler for radio detection.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
+ * @param context opaque user pointer passed to the callback.
  */
 typedef void (*pico_rnode_proto_command_detect_cb_t)(
     void * context
@@ -139,10 +146,11 @@ typedef void (*pico_rnode_proto_command_detect_cb_t)(
 /**
  * Command handler for changing radio state.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
- * - interface: interface identifier for the command.
- * - state: radio state to apply.
+ * @param context opaque user pointer passed to the callback.
+
+ * @param interface interface identifier for the command.
+
+ * @param state radio state to apply.
  */
 typedef void (*pico_rnode_proto_command_set_radio_state_cb_t)(
     void * context,
@@ -153,8 +161,7 @@ typedef void (*pico_rnode_proto_command_set_radio_state_cb_t)(
 /**
  * Command handler for receiving a ready notification.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
+ * @param context opaque user pointer passed to the callback.
  */
 typedef void (*pico_rnode_proto_command_ready_cb_t)(
     void * context
@@ -163,8 +170,7 @@ typedef void (*pico_rnode_proto_command_ready_cb_t)(
 /**
  * Command handler for leaving the current mode or network.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
+ * @param context opaque user pointer passed to the callback.
  */
 typedef void (*pico_rnode_proto_command_leave_cb_t)(
     void * context
@@ -173,8 +179,7 @@ typedef void (*pico_rnode_proto_command_leave_cb_t)(
 /**
  * Command handler for locking the radio or protocol state.
  *
- * Parameters:
- * - context: opaque user pointer passed to the callback.
+ * @param context opaque user pointer passed to the callback.
  */
 typedef void (*pico_rnode_proto_command_lock_cb_t)(
     void * context,
@@ -250,26 +255,39 @@ typedef struct {
  * The decoder will use the provided callbacks when commands are successfully
  * parsed from incoming bytes.
  *
- * Parameters:
- * - decoder: pointer to the decoder instance to initialize.
- * - context: opaque user context passed through to all callbacks.
- * - detect_cb: callback invoked for a radio detect command.
- * - set_frequency_cb: callback invoked for a set frequency command.
- * - set_bandwidth_cb: callback invoked for a set bandwidth command.
- * - set_txpower_cb: callback invoked for a set transmit power command.
- * - set_spreading_factor_cb: callback invoked for a set spreading factor command.
- * - set_coding_rate_cb: callback invoked for a set coding rate command.
- * - set_radio_state_cb: callback invoked for a set radio state command.
- * - ready_cb: callback invoked for a ready command.
- * - lock_cb: callback invoked for a lock command.
- * - leave_cb: callback invoked for a leave command.
- * - tx_start_cb: callback invoked when a transmit frame begins.
- * - tx_data_cb: callback invoked for each byte inside a transmit frame.
- * - tx_end_cb: callback invoked when a transmit frame ends.
- * - error_cb: callback invoked when a decoder error occurs.
+ * @param decoder pointer to the decoder instance to initialize.
+
+ * @param context opaque user context passed through to all callbacks.
+
+ * @param detect_cb callback invoked for a radio detect command.
+
+ * @param set_frequency_cb callback invoked for a set frequency command.
+
+ * @param set_bandwidth_cb callback invoked for a set bandwidth command.
+
+ * @param set_txpower_cb callback invoked for a set transmit power command.
+
+ * @param set_spreading_factor_cb callback invoked for a set spreading factor command.
+
+ * @param set_coding_rate_cb callback invoked for a set coding rate command.
+
+ * @param set_radio_state_cb callback invoked for a set radio state command.
+
+ * @param ready_cb callback invoked for a ready command.
+
+ * @param lock_cb callback invoked for a lock command.
+
+ * @param leave_cb callback invoked for a leave command.
+
+ * @param tx_start_cb callback invoked when a transmit frame begins.
+
+ * @param tx_data_cb callback invoked for each byte inside a transmit frame.
+
+ * @param tx_end_cb callback invoked when a transmit frame ends.
+
+ * @param error_cb callback invoked when a decoder error occurs.
  *
- * Returns:
- * - None.
+ * @return None.
  */
 void pico_rnode_proto_command_decoder_init(
     pico_rnode_proto_command_decoder_t *decoder,
@@ -293,16 +311,19 @@ void pico_rnode_proto_command_decoder_init(
 /**
  * Decode a single byte from the incoming command stream.
  *
- * Parameters:
- * - decoder: decoder instance handling parsing state.
- * - byte: next byte from the incoming command stream.
+ * @param decoder decoder instance handling parsing state.
+
+ * @param byte next byte from the incoming command stream.
  *
- * Returns:
- * - PICO_RNODE_PROTO_DECODER_STATUS_OK when decoding succeeded.
- * - PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the command payload is invalid.
- * - PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the opcode cannot be handled.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when a command argument is invalid.
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_OK when decoding succeeded.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the command payload is invalid.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the opcode cannot be handled.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when a command argument is invalid.
  */
 pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
     pico_rnode_proto_command_decoder_t *decoder,
@@ -312,17 +333,21 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
 /**
  * Decode a buffer of incoming bytes.
  *
- * Parameters:
- * - decoder: decoder instance handling parsing state.
- * - bytes: pointer to the input byte buffer.
- * - len: number of bytes to decode from the buffer.
+ * @param decoder decoder instance handling parsing state.
+
+ * @param bytes pointer to the input byte buffer.
+
+ * @param len number of bytes to decode from the buffer.
  *
- * Returns:
- * - PICO_RNODE_PROTO_DECODER_STATUS_OK when decoding succeeded.
- * - PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the command payload is invalid.
- * - PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the opcode cannot be handled.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when a command argument is invalid.
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_OK when decoding succeeded.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the command payload is invalid.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the opcode cannot be handled.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when a command argument is invalid.
  */
 pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_write(
     pico_rnode_proto_command_decoder_t *decoder,
@@ -333,8 +358,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_write(
 /**
  * Notify the decoder that a new command frame has started.
  *
- * Parameters:
- * - decoder: decoder instance handling parsing state.
+ * @param decoder decoder instance handling parsing state.
  */
 void pico_rnode_proto_command_decoder_start(
     pico_rnode_proto_command_decoder_t *decoder
@@ -343,15 +367,17 @@ void pico_rnode_proto_command_decoder_start(
 /**
  * Notify the decoder that the current command frame has ended.
  *
- * Parameters:
- * - decoder: decoder instance handling parsing state.
+ * @param decoder decoder instance handling parsing state.
  *
- * Returns:
- * - PICO_RNODE_PROTO_DECODER_STATUS_OK when the frame ended successfully.
- * - PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the final frame length was invalid.
- * - PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the command opcode was not recognized.
- * - PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when the command payload was invalid.
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_OK when the frame ended successfully.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_ABORTED when decoding was aborted.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH when the final frame length was invalid.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE when the command opcode was not recognized.
+
+ * @return PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT when the command payload was invalid.
  */
 pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
     pico_rnode_proto_command_decoder_t *decoder

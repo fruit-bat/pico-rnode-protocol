@@ -81,7 +81,9 @@ status = pico_rnode_proto_command_decoder_write(&decoder, frame_bytes, frame_len
 status = pico_rnode_proto_command_decoder_end(&decoder);
 ```
 
-Also in the suite:
+This repository is part of a suite:
+* [pico-serial-proxy](https://github.com/fruit-bat/pico-serial-proxy)
+* [pico-serial-recording](https://github.com/fruit-bat/pico-serial-recording)
 * [pico-kiss-protocol](https://github.com/fruit-bat/pico-kiss-protocol)
 * [pico-rnode-protocol](https://github.com/fruit-bat/pico-rnode-protocol)
 
@@ -104,3 +106,47 @@ cmake --build build && ctest --verbose --test-dir . -R host_tests_round_trip
 ```
 
 This compiles `pico-rnode-protocol` as a normal host executable and runs the unit tests without Pico hardware.
+
+## Monitor application
+The monitor app can proxy a real serial device to a virtual PTY, optionally record the traffic, and replay a saved recording through the decoder path.
+
+Build and run:
+
+```bash
+cmake -S apps/monitor -B apps/monitor/build
+cmake --build apps/monitor/build --target rnode-monitor
+./apps/monitor/build/rnode-monitor /dev/ttyUSB0 9600 --record capture.rec
+```
+
+### Monitor CLI options
+
+The RNODE monitor supports:
+
+```bash
+./apps/monitor/build/rnode-monitor --help
+```
+
+- `--help` prints usage information.
+- `--record <file>` writes captured traffic to a recording file.
+- `--replay <file>` replays a saved recording through the RNODE decoder path.
+
+Example:
+
+```bash
+./apps/monitor/build/rnode-monitor /dev/ttyUSB0 9600 --record capture.rec
+./apps/monitor/build/rnode-monitor --replay capture.rec
+```
+
+Replay a saved recording:
+
+```bash
+./apps/monitor/build/rnode-monitor --replay capture.rec
+```
+
+Replay a saved recording with the shared replay helper:
+
+```bash
+cmake -S ../../pico-serial-recording/apps/replay -B ../../pico-serial-recording/apps/replay/build
+cmake --build ../../pico-serial-recording/apps/replay/build
+./pico-serial-recording/apps/replay/build/pico-serial-recording-replay capture.rec
+```
