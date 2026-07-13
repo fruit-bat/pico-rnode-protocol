@@ -14,10 +14,22 @@ typedef struct {
     uint8_t expected_interface;
     int8_t expected_rssi;
     int8_t expected_snr;
+    uint8_t expected_random_value;
+    uint8_t expected_platform_id;
+    uint8_t expected_mcu_id;
+    uint16_t expected_fw_version;
     uint32_t rssi_count;
     uint32_t snr_count;
+    uint32_t random_count;
+    uint32_t platform_count;
+    uint32_t mcu_count;
+    uint32_t fw_version_count;
     int8_t last_rssi;
     int8_t last_snr;
+    uint8_t last_random_value;
+    uint8_t last_platform_id;
+    uint8_t last_mcu_id;
+    uint16_t last_fw_version;
     uint32_t blink_count;
     uint32_t stat_rx_start_count;
     uint32_t stat_rx_data_count;
@@ -97,6 +109,54 @@ static void roundtrip_decoder_snr_cb(
     assert(snr == state->expected_snr);
     state->snr_count++;
     state->last_snr = snr;
+}
+
+static void roundtrip_decoder_random_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t random_value
+) {
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(random_value == state->expected_random_value);
+    state->random_count++;
+    state->last_random_value = random_value;
+}
+
+static void roundtrip_decoder_platform_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t platform_id
+) {
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(platform_id == state->expected_platform_id);
+    state->platform_count++;
+    state->last_platform_id = platform_id;
+}
+
+static void roundtrip_decoder_mcu_cb(
+    void *context,
+    uint8_t interface,
+    uint8_t mcu_id
+) {
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(mcu_id == state->expected_mcu_id);
+    state->mcu_count++;
+    state->last_mcu_id = mcu_id;
+}
+
+static void roundtrip_decoder_fw_version_cb(
+    void *context,
+    uint8_t interface,
+    uint16_t version
+) {
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(version == state->expected_fw_version);
+    state->fw_version_count++;
+    state->last_fw_version = version;
 }
 
 static void roundtrip_decoder_blink_cb(void *context) {
@@ -190,10 +250,10 @@ static void init_roundtrip_decoder(
         roundtrip_decoder_rssi_cb,
         roundtrip_decoder_snr_cb,
         roundtrip_decoder_blink_cb,
-        NULL,
-        NULL,
-        NULL,
-        NULL,
+        roundtrip_decoder_random_cb,
+        roundtrip_decoder_platform_cb,
+        roundtrip_decoder_mcu_cb,
+        roundtrip_decoder_fw_version_cb,
         roundtrip_decoder_stat_rx_start_cb,
         roundtrip_decoder_stat_rx_data_cb,
         roundtrip_decoder_stat_rx_end_cb,
@@ -288,6 +348,46 @@ static void test_round_trip_blink(void) {
     assert(rt_state.error_count == 0);
 }
 
+static void test_round_trip_platform(void) {
+    pico_rnode_proto_event_encoder_t encoder = {0};
+    pico_rnode_proto_event_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 6;
+    rt_state.expected_platform_id = 0x11;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    assert(pico_rnode_proto_event_platform(&encoder, 6, 0x11) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 2);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.platform_count == 1);
+    assert(rt_state.last_platform_id == 0x11);
+    assert(rt_state.error_count == 0);
+}
+
+static void test_round_trip_mcu(void) {
+    pico_rnode_proto_event_encoder_t encoder = {0};
+    pico_rnode_proto_event_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 7;
+    rt_state.expected_mcu_id = 0x22;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    assert(pico_rnode_proto_event_mcu(&encoder, 7, 0x22) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 2);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.mcu_count == 1);
+    assert(rt_state.last_mcu_id == 0x22);
+    assert(rt_state.error_count == 0);
+}
+
 static void test_round_trip_stat_rx(void) {
     pico_rnode_proto_event_encoder_t encoder = {0};
     pico_rnode_proto_event_decoder_t decoder = {0};
@@ -343,6 +443,8 @@ void test_event_round_trip(void) {
     run_test("event_round_trip_rssi", test_round_trip_rssi);
     run_test("event_round_trip_snr", test_round_trip_snr);
     run_test("event_round_trip_blink", test_round_trip_blink);
+    run_test("event_round_trip_platform", test_round_trip_platform);
+    run_test("event_round_trip_mcu", test_round_trip_mcu);
     run_test("event_round_trip_stat_rx", test_round_trip_stat_rx);
     run_test("event_round_trip_stat_tx", test_round_trip_stat_tx);
     printf("All event round trip tests passed.\n");

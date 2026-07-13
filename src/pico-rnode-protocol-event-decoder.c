@@ -7,6 +7,8 @@ static int32_t rnode_event_opcode_length(uint8_t opcode) {
             return -1;
         case 0x03: // STAT_RSSI
         case 0x04: // STAT_SNR
+        case 0x08: // PLATFORM
+        case 0x09: // MCU
             return 1;
         case 0x00: // BLINK or DATA
             return 0;
@@ -40,6 +42,16 @@ static pico_rnode_proto_event_decoder_status_t pico_rnode_proto_event_decoder_fi
         case 0x00: // BLINK or DATA with no payload
             if (decoder->blink_cb) {
                 decoder->blink_cb(decoder->context);
+            }
+            break;
+        case 0x08: // PLATFORM
+            if (decoder->platform_cb) {
+                decoder->platform_cb(decoder->context, decoder->interface, (uint8_t)value);
+            }
+            break;
+        case 0x09: // MCU
+            if (decoder->mcu_cb) {
+                decoder->mcu_cb(decoder->context, decoder->interface, (uint8_t)value);
             }
             break;
         default:
