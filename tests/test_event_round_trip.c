@@ -13,8 +13,11 @@
 typedef struct {
     uint8_t expected_interface;
     int8_t expected_rssi;
+    int8_t expected_snr;
     uint32_t rssi_count;
+    uint32_t snr_count;
     int8_t last_rssi;
+    int8_t last_snr;
     uint32_t blink_count;
     uint32_t stat_rx_start_count;
     uint32_t stat_rx_data_count;
@@ -82,6 +85,18 @@ static void roundtrip_decoder_rssi_cb(
     assert(rssi == state->expected_rssi);
     state->rssi_count++;
     state->last_rssi = rssi;
+}
+
+static void roundtrip_decoder_snr_cb(
+    void *context,
+    uint8_t interface,
+    int8_t snr
+) {
+    roundtrip_state_t *state = context;
+    assert(interface == state->expected_interface);
+    assert(snr == state->expected_snr);
+    state->snr_count++;
+    state->last_snr = snr;
 }
 
 static void roundtrip_decoder_blink_cb(void *context) {
@@ -173,7 +188,7 @@ static void init_roundtrip_decoder(
         decoder,
         state,
         roundtrip_decoder_rssi_cb,
-        NULL,
+        roundtrip_decoder_snr_cb,
         roundtrip_decoder_blink_cb,
         NULL,
         NULL,
@@ -235,6 +250,44 @@ static void test_round_trip_rssi(void) {
     assert(rt_state.error_count == 0);
 }
 
+static void test_round_trip_snr(void) {
+    pico_rnode_proto_event_encoder_t encoder = {0};
+    pico_rnode_proto_event_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 1;
+    rt_state.expected_snr = 11;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    assert(pico_rnode_proto_event_snr(&encoder, 1, 11) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 2);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.snr_count == 1);
+    assert(rt_state.last_snr == 11);
+    assert(rt_state.error_count == 0);
+}
+
+static void test_round_trip_blink(void) {
+    pico_rnode_proto_event_encoder_t encoder = {0};
+    pico_rnode_proto_event_decoder_t decoder = {0};
+
+    reset_roundtrip_state();
+    rt_state.expected_interface = 4;
+
+    init_roundtrip_encoder(&encoder, &rt_state);
+    init_roundtrip_decoder(&decoder, &rt_state);
+
+    assert(pico_rnode_proto_event_blink(&encoder, 4) == PICO_RNODE_PROTO_ENCODER_STATUS_OK);
+    assert(rt_buffer_len == 1);
+
+    roundtrip_decode_buffer(&decoder);
+    assert(rt_state.blink_count == 1);
+    assert(rt_state.error_count == 0);
+}
+
 static void test_round_trip_stat_rx(void) {
     pico_rnode_proto_event_encoder_t encoder = {0};
     pico_rnode_proto_event_decoder_t decoder = {0};
@@ -288,6 +341,8 @@ static void run_test(const char *name, void (*fn)(void)) {
 
 void test_event_round_trip(void) {
     run_test("event_round_trip_rssi", test_round_trip_rssi);
+    run_test("event_round_trip_snr", test_round_trip_snr);
+    run_test("event_round_trip_blink", test_round_trip_blink);
     run_test("event_round_trip_stat_rx", test_round_trip_stat_rx);
     run_test("event_round_trip_stat_tx", test_round_trip_stat_tx);
     printf("All event round trip tests passed.\n");
