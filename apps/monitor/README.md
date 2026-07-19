@@ -23,7 +23,7 @@ The resulting executable is:
 ./build/rnode-monitor [<real_tty_device>] [baud_rate] [--record <file>] [--replay <file>] [--help]
 ```
 
-It appears that ESP32 based RNODE announce themselves on startup...
+It appears that ESP32 based RNODE devices announce themselves on startup...
 
 ```sh
 $ cat /dev/ttyACM0 | hexdump -C
