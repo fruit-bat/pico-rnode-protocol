@@ -59,6 +59,17 @@ static const char *text_decoder_opcode_name(uint8_t opcode) {
     }
 }
 
+static const char* text_decoder_error_name(pico_rnode_proto_decoder_status_t status) {
+    switch (status) {
+        case PICO_RNODE_PROTO_DECODER_STATUS_OK: return "OK";
+        case PICO_RNODE_PROTO_DECODER_STATUS_ABORTED: return "ABORTED";
+        case PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH: return "INVALID_LENGTH";
+        case PICO_RNODE_PROTO_DECODER_STATUS_UNKNOWN_OPCODE: return "UNKNOWN_OPCODE";
+        case PICO_RNODE_PROTO_DECODER_STATUS_INVALID_ARGUMENT: return "INVALID_ARGUMENT";
+        default: return "UNKNOWN_ERROR";
+    }
+}
+
 static pico_rnode_proto_stream_cb_status_t text_decoder_tx_start_cb(
     void *context,
     uint8_t interface
@@ -163,7 +174,8 @@ static void text_decoder_error_cb(
 ) {
     text_decoder_log(
         context,
-        "COMMAND ERROR interface=%u opcode=0x%02X (%s) index=%u status=%u",
+        "COMMAND ERROR %s: interface=%u opcode=0x%02X (%s) index=%u status=%u",
+        text_decoder_error_name(status),
         interface,
         opcode,
         text_decoder_opcode_name(opcode),

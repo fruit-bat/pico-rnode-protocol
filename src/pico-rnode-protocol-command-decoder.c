@@ -149,22 +149,6 @@ static int32_t rnode_proto_opcode_length(rnode_opcode_t opcode) {
     }
 }
 
-static const char* rnode_proto_opcode_name(rnode_opcode_t opcode) {
-    switch (opcode) {
-        case RNODE_OPCODE_DATA: return "DATA";
-        case RNODE_OPCODE_FREQUENCY: return "FREQUENCY";
-        case RNODE_OPCODE_BANDWIDTH: return "BANDWIDTH";
-        case RNODE_OPCODE_TXPOWER: return "TXPOWER";
-        case RNODE_OPCODE_SF: return "SF";
-        case RNODE_OPCODE_CR: return "CR";
-        case RNODE_OPCODE_RADIO_STATE: return "RADIO_STATE";
-        case RNODE_OPCODE_DETECT: return "DETECT";
-        case RNODE_OPCODE_LEAVE: return "LEAVE";
-        case RNODE_OPCODE_READY: return "READY";
-        default: return "UNKNOWN";
-    }
-}
-
 static pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_fixed_length_command(
     pico_rnode_proto_command_decoder_t *decoder
 ) {
@@ -304,12 +288,14 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_put(
             break;
         }
         case PICO_RNODE_PROTO_DECODER_STATE_READ_FIXED: {
-            if (decoder->payload_index < decoder->opcode_length) {
+            if (decoder->payload_index < 4 /* decoder->opcode_length */) {
                 decoder->smallbuf[decoder->payload_index] = byte;
             }
             else {
                 // Received more bytes than expected for fixed-length command, abort and report error
                 decoder->state = PICO_RNODE_PROTO_DECODER_STATE_ABORT;
+                printf("-------------- too many -- expected %u bytes\n", decoder->opcode_length);
+
                 if (decoder->error_cb) {
                     decoder->error_cb(
                         decoder->context, 
@@ -388,6 +374,7 @@ pico_rnode_proto_decoder_status_t pico_rnode_proto_command_decoder_end(
             else {
                 // Received fewer bytes than expected for fixed-length command, abort and report error
                 status = PICO_RNODE_PROTO_DECODER_STATUS_INVALID_LENGTH;
+                printf("-------------- fewer -- expected %u bytes\n", decoder->opcode_length);
                 if (decoder->error_cb) {
                     decoder->error_cb(
                         decoder->context, 
