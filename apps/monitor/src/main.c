@@ -294,7 +294,8 @@ int main(int argc, char *argv[]) {
     pico_rnode_proto_command_decoder_text_init(
         &outgoing_command_text_decoder,
         &outgoing_command_decoder,
-        stdout);
+        stdout,
+        outgoing_ctx.direction);
 
     pico_rnode_proto_event_decoder_text_init(
         &incoming_event_text_decoder,

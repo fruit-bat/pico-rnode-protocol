@@ -10,10 +10,20 @@ static FILE *text_decoder_out(void *context) {
     return text_decoder && text_decoder->out ? text_decoder->out : stdout;
 }
 
+static const char *command_decoder_prefix(void *context) {
+    pico_rnode_proto_command_decoder_text_t *text_decoder = (pico_rnode_proto_command_decoder_text_t *)context;
+    return text_decoder && text_decoder->prefix ? text_decoder->prefix : "";
+}
+
 static void text_decoder_log(void *context, const char *format, ...) {
     FILE *out = text_decoder_out(context);
+    const char *prefix = command_decoder_prefix(context);
     if (!out) {
         return;
+    }
+
+    if (prefix[0] != '\0') {
+        fprintf(out, "%s ", prefix);
     }
 
     va_list args;
@@ -53,7 +63,7 @@ static pico_rnode_proto_stream_cb_status_t text_decoder_tx_start_cb(
     void *context,
     uint8_t interface
 ) {
-    text_decoder_log(context, "TX START interface=%u", interface);
+    text_decoder_log(context, "COMMAND TX START interface=%u", interface);
     return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
@@ -63,7 +73,7 @@ static pico_rnode_proto_stream_cb_status_t text_decoder_tx_data_cb(
     uint8_t byte,
     uint32_t byte_index
 ) {
-    text_decoder_log(context, "TX DATA interface=%u index=%u byte=0x%02X", interface, byte_index, byte);
+    text_decoder_log(context, "COMMAND TX DATA interface=%u index=%u byte=0x%02X", interface, byte_index, byte);
     return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
@@ -72,7 +82,7 @@ static pico_rnode_proto_stream_cb_status_t text_decoder_tx_end_cb(
     uint8_t interface,
     uint32_t length
 ) {
-    text_decoder_log(context, "TX END interface=%u length=%u", interface, length);
+    text_decoder_log(context, "COMMAND TX END interface=%u length=%u", interface, length);
     return PICO_RNODE_PROTO_STREAM_CB_STATUS_OK;
 }
 
@@ -85,7 +95,7 @@ static void text_decoder_set_frequency_cb(
     uint8_t interface,
     uint32_t hz
 ) {
-    text_decoder_log(context, "FREQUENCY interface=%u hz=%u", interface, hz);
+    text_decoder_log(context, "COMMAND FREQUENCY interface=%u hz=%u", interface, hz);
 }
 
 static void text_decoder_set_bandwidth_cb(
@@ -93,7 +103,7 @@ static void text_decoder_set_bandwidth_cb(
     uint8_t interface,
     uint32_t bandwidth
 ) {
-    text_decoder_log(context, "BANDWIDTH interface=%u bandwidth=%u", interface, bandwidth);
+    text_decoder_log(context, "COMMAND BANDWIDTH interface=%u bandwidth=%u", interface, bandwidth);
 }
 
 static void text_decoder_set_txpower_cb(
@@ -101,7 +111,7 @@ static void text_decoder_set_txpower_cb(
     uint8_t interface,
     int8_t dbm
 ) {
-    text_decoder_log(context, "TXPOWER interface=%u dbm=%d", interface, dbm);
+    text_decoder_log(context, "COMMAND TXPOWER interface=%u dbm=%d", interface, dbm);
 }
 
 static void text_decoder_set_spreading_factor_cb(
@@ -109,7 +119,7 @@ static void text_decoder_set_spreading_factor_cb(
     uint8_t interface,
     uint8_t sf
 ) {
-    text_decoder_log(context, "SF interface=%u sf=%u", interface, sf);
+    text_decoder_log(context, "COMMAND SF interface=%u sf=%u", interface, sf);
 }
 
 static void text_decoder_set_coding_rate_cb(
@@ -117,7 +127,7 @@ static void text_decoder_set_coding_rate_cb(
     uint8_t interface,
     uint8_t cr
 ) {
-    text_decoder_log(context, "CR interface=%u cr=%u", interface, cr);
+    text_decoder_log(context, "COMMAND CR interface=%u cr=%u", interface, cr);
 }
 
 static void text_decoder_set_radio_state_cb(
@@ -125,11 +135,11 @@ static void text_decoder_set_radio_state_cb(
     uint8_t interface,
     pico_rnode_proto_radio_state_t state
 ) {
-    text_decoder_log(context, "RADIO_STATE interface=%u state=%s", interface, text_decoder_radio_state_name(state));
+    text_decoder_log(context, "COMMAND RADIO_STATE interface=%u state=%s", interface, text_decoder_radio_state_name(state));
 }
 
 static void text_decoder_ready_cb(void *context) {
-    text_decoder_log(context, "READY");
+    text_decoder_log(context, "COMMAND READY");
 }
 
 static void text_decoder_lock_cb(
@@ -137,11 +147,11 @@ static void text_decoder_lock_cb(
     uint8_t interface,
     uint8_t lock_state
 ) {
-    text_decoder_log(context, "LOCK interface=%u state=%u", interface, lock_state);
+    text_decoder_log(context, "COMMAND LOCK interface=%u state=%u", interface, lock_state);
 }
 
 static void text_decoder_leave_cb(void *context) {
-    text_decoder_log(context, "LEAVE");
+    text_decoder_log(context, "COMMAND LEAVE");
 }
 
 static void text_decoder_error_cb(
@@ -153,7 +163,7 @@ static void text_decoder_error_cb(
 ) {
     text_decoder_log(
         context,
-        "ERROR interface=%u opcode=0x%02X (%s) index=%u status=%u",
+        "COMMAND ERROR interface=%u opcode=0x%02X (%s) index=%u status=%u",
         interface,
         opcode,
         text_decoder_opcode_name(opcode),
@@ -165,13 +175,15 @@ static void text_decoder_error_cb(
 void pico_rnode_proto_command_decoder_text_init(
     pico_rnode_proto_command_decoder_text_t *text_decoder,
     pico_rnode_proto_command_decoder_t* decoder,
-    FILE *out
+    FILE *out,
+    const char *prefix
 ) {
     if (!text_decoder || !decoder) {
         return;
     }
 
     text_decoder->out = out ? out : stdout;
+    text_decoder->prefix = prefix ? prefix : "";
 
     pico_rnode_proto_command_decoder_init(
         decoder,

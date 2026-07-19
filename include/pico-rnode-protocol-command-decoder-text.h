@@ -16,6 +16,7 @@ extern "C" {
  */
 typedef struct {
     FILE *out; /**< Output stream for human-readable decoded messages. */
+    const char *prefix; /**< Optional prefix printed before each message. */
 } pico_rnode_proto_command_decoder_text_t;
 
 /**
@@ -27,7 +28,8 @@ typedef struct {
 void pico_rnode_proto_command_decoder_text_init(
     pico_rnode_proto_command_decoder_text_t *text_decoder,
     pico_rnode_proto_command_decoder_t* decoder,
-    FILE *out
+    FILE *out,
+    const char *prefix
 );
 
 #ifdef __cplusplus
